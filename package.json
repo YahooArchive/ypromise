@@ -1,0 +1,16 @@
+{
+	"name": "yui-promise",
+	"version": "0.0.1",
+	"description": "Standalone version of YUI promises",
+	"main": "lib/promise.js",
+	"devDependencies": {
+		"promises-aplus-tests": "1.3.2"
+	},
+	"directories": {
+		"lib": "./lib"
+	},
+	"scripts": {
+		"test": "promises-aplus-tests tests/cli/adapter.js",
+		"lint": ""
+	}
+}
