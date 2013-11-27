@@ -188,10 +188,15 @@ https://github.com/juandopazo/yui-promise/blob/master/LICENSE.md
     */
     Promise.reject = function (reason) {
         /*jshint newcap: false */
-        return new this(function (resolve, reject) {
-        /*jshint newcap: true */
-            reject(reason);
-        });
+        var promise = new this(function () {});
+       /*jshint newcap: true */
+
+       // Do not go through resolver.reject() because an immediately rejected promise
+       // always has no callbacks which would trigger an unnecessary warnihg
+       promise._resolver._result = reason;
+       promise._resolver._status = 'rejected';
+
+       return promise;
     };
 
     /*
