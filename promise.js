@@ -1,7 +1,7 @@
 /*
 Copyright 2013 Yahoo! Inc. All rights reserved.
 Licensed under the BSD License.
-https://github.com/juandopazo/yui-promise/blob/master/LICENSE.md
+http://yuilibrary.com/license/
 */
 (function (global, factory) {
     if (typeof module === 'object' && module) {
