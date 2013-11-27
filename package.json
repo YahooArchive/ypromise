@@ -1,12 +1,12 @@
 {
 	"name": "yui-promise",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Standalone version of YUI promises",
 	"repository": {
         "type": "git",
         "url": "http://github.com/juandopazo/yui-promise.git"
     },
-	"main": "lib/promise.js",
+	"main": "promise.js",
 	"devDependencies": {
 		"promises-aplus-tests": "1.3.2"
 	},
