@@ -1,0 +1,24 @@
+{
+  "name": "yui-promise",
+  "version": "0.1.0",
+  "homepage": "https://github.com/juandopazo/yui-promise",
+  "authors": [
+    "Juan Ignacio Dopazo <dopazo.juan@gmail.com>"
+  ],
+  "description": "Standalone version of YUI promises",
+  "main": "promise.js",
+  "keywords": [
+    "promise",
+    "A+",
+    "aplus",
+    "YUI"
+  ],
+  "license": "BSD",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "tests"
+  ]
+}
