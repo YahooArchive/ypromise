@@ -1,8 +1,8 @@
-YUI.add('promise-tests', function (Y, NAME, __imports__) {
+YUI.add('promise-tests', function (Y, NAME) {
 
     var Assert = Y.Assert,
         ArrayAssert = Y.Test.ArrayAssert,
-        Promise = __imports__.promise['default'],
+        Promise = Y.Promise,
         isPromise = Promise.isPromise;
 
     // -- Suite --------------------------------------------------------------------
@@ -21,7 +21,7 @@ YUI.add('promise-tests', function (Y, NAME, __imports__) {
         },
 
         'calling Promise as a function should throw': function () {
-            new Promise(function () {});
+            Promise(function () {});
         },
 
         'promise.then returns a promise': function () {
@@ -91,15 +91,15 @@ YUI.add('promise-tests', function (Y, NAME, __imports__) {
             test.wait(100);
         },
 
-        'correct value for "this" inside the promise init function': function () {
+        'correct value for `this` inside the promise init function': function () {
             var promiseA,
-                promiseB = Promise(function () {
+                promiseB = new Promise(function () {
                     promiseA = this;
 
-                    Assert.isInstanceOf(Promise, this, '"this" should be a promise');
+                    Assert.isInstanceOf(Promise, this, '`this` should be a promise');
                 });
 
-            Assert.areSame(promiseA, promiseB, 'the return value of Promise and "this" inside the init function should be the same');
+            Assert.areSame(promiseA, promiseB, 'the return value of Promise and `this` inside the init function should be the same');
         },
 
         'callbacks passed to then should be called asynchronously': function () {
