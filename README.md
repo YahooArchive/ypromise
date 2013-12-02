@@ -1,7 +1,9 @@
-yui-promise
-===========
+YUI Promises
+============
 
 [![Build Status](https://travis-ci.org/juandopazo/yui-promise.png)](https://travis-ci.org/juandopazo/yui-promise)
+
+**Notice**: this module is under development.
 
 Promises allow you to interact with a value that may or may not be available yet.
 
@@ -15,7 +17,6 @@ YUI promises can be loaded as:
  * A Node.js module available in `npm`
  * An AMD module
  * As part of the YUI library. See its [User Guide](http://yuilibrary.com/yui/docs/promise/)
- * Using Bower as `yui-promise`
 
 ### Node.js
 
