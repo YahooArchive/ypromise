@@ -71,11 +71,15 @@ http://yuilibrary.com/license/
         */
         this._resolver = resolver;
 
-        fn.call(this, function (value) {
-            resolver.resolve(value);
-        }, function (reason) {
-            resolver.reject(reason);
-        });
+        try {
+            fn(function (value) {
+                resolver.resolve(value);
+            }, function (reason) {
+                resolver.reject(reason);
+            });
+        } catch (e) {
+            resolver.reject(e);
+        }
     }
 
     assign(Promise.prototype, {
