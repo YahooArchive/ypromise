@@ -1,12 +1,18 @@
 
 var Promise = require('../../promise');
 
-exports.resolved = function (value) {
-	return Promise.resolve(value);
+exports.fulfilled = function (value) {
+    return Promise.resolve(value);
 };
 exports.rejected = function (reason) {
-	return Promise.reject(reason);
+    return Promise.reject(reason);
 };
-exports.deferred = function () {
-	return Promise.deferred();
+exports.pending = function () {
+    var deferred = Promise.deferred;
+
+    return {
+        fulfill: deferred.resolve,
+        reject:  deferred.reject,
+        promise: deferred.promise
+    };
 };
