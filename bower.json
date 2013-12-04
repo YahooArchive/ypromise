@@ -1,6 +1,6 @@
 {
   "name": "yui-promise",
-  "version": "0.1.0",
+  "version": "0.0.4",
   "homepage": "https://github.com/juandopazo/yui-promise",
   "authors": [
     "Juan Ignacio Dopazo <dopazo.juan@gmail.com>"
@@ -14,7 +14,6 @@
     "YUI"
   ],
   "license": "BSD",
-  "private": true,
   "ignore": [
     "**/.*",
     "node_modules",
