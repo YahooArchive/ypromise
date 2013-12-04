@@ -4,16 +4,15 @@ Licensed under the BSD License.
 http://yuilibrary.com/license/
 */
 (function (global, factory) {
+    var built = factory();
     if (typeof module === 'object' && module) {
-        module.exports = factory();
-    } if (typeof YUI === 'function') {
-        YUI.add('promise', function (Y) {
-            Y.Promise = factory();
-        }, '@VERSION@');
-    } else if (typeof define === 'function' && define.amd) {
-        define(factory);
-    } else if (typeof Promise !== 'function') {
-        global.Promise = factory();
+        module.exports = built;
+    }
+    if (typeof define === 'function' && define.amd) {
+        define(built);
+    }
+    if (!global.Promise) {
+        global.Promise = built;
     }
 }(this, function () {
 
