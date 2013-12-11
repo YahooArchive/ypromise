@@ -1,6 +1,6 @@
 {
 	"name": "yui-promise",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"description": "Standalone version of YUI promises",
 	"repository": {
         "type": "git",

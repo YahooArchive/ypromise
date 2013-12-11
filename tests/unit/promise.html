@@ -8,15 +8,17 @@
 <div id="log"></div>
 
 <script src="http://yui.yahooapis.com/3.14.0/build/yui/yui-min.js"></script>
-<script type="text/javascript">
+<script src="../../promise.js"></script>
+<script>
+YUI.add('promise', function (Y) {
+    Y.Promise = window.Promise;
+});
+</script>
+<script>
 YUI({
     coverage: ['promise'],
     filter: (window.location.search.match(/[?&]filter=([^&]+)/) || [])[1] || 'raw',
     modules: {
-        'promise': {
-            fullpath: '../../promise.js',
-            requires: []
-        },
         'promise-tests':  {
             fullpath: './assets/promise-tests.js',
             requires: ['promise', 'test']
