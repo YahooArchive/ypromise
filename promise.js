@@ -104,17 +104,17 @@ http://yuilibrary.com/license/
         then: function (callback, errback) {
             // using this.constructor allows for customized promises to be
             // returned instead of plain ones
-            var promise = new this.constructor(noop);
+            var resolve, reject,
+                promise = new this.constructor(function (res, rej) {
+                    resolve = res;
+                    reject = rej;
+                });
 
-            this._resolver.addCallbacks(
+            this._resolver._addCallbacks(
                 typeof callback === 'function' ?
-                    Promise._wrap(promise, callback) : function (value) {
-                        promise._resolver.resolve(value);
-                    },
+                    Promise._wrap(promise, resolve, reject, callback) : resolve,
                 typeof errback === 'function' ?
-                    Promise._wrap(promise, errback) : function (reason) {
-                        promise._resolver.reject(reason);
-                    }
+                    Promise._wrap(promise, resolve, reject, errback) : reject
             );
 
             return promise;
@@ -161,8 +161,7 @@ http://yuilibrary.com/license/
     @static
     @private
     **/
-    Promise._wrap = function (promise, fn) {
-        var resolver = promise._resolver;
+    Promise._wrap = function (promise, resolve, reject, fn) {
         // callbacks and errbacks only get one argument
         return function (valueOrReason) {
             var result;
@@ -178,15 +177,16 @@ http://yuilibrary.com/license/
                 result = fn(valueOrReason);
             } catch (e) {
                 // calling return only to stop here
-                resolver.reject(e);
+                reject(e);
                 return;
             }
 
             if (result === promise) {
-                resolver.reject(new TypeError('Cannot resolve a promise with itself'));
+                reject(new TypeError('Cannot resolve a promise with itself'));
+                return;
             }
 
-            resolver.resolve(result);
+            resolve(result);
         };
     };
 
@@ -456,7 +456,7 @@ http://yuilibrary.com/license/
         fulfill: function (value) {
             var status = this._status;
 
-            if (status === 'pending' || status === 'resolved') {
+            if (status === 'pending' || status === 'accepted') {
                 this._result = value;
                 this._status = 'fulfilled';
             }
@@ -490,7 +490,7 @@ http://yuilibrary.com/license/
         reject: function (reason) {
             var status = this._status;
 
-            if (status === 'pending' || status === 'resolved') {
+            if (status === 'pending' || status === 'accepted') {
                 this._result = reason;
                 this._status = 'rejected';
             }
@@ -532,16 +532,22 @@ http://yuilibrary.com/license/
         */
         resolve: function (value) {
             if (this._status === 'pending') {
-                this._resolve(value);
+                this._status = 'accepted';
+                this._value = value;
+
+                if ((this._callbacks && this._callbacks.length) ||
+                    (this._errbacks && this._errbacks.length)) {
+                    this._unwrap(this._value);
+                }
             }
         },
 
-        _resolve: function (value) {
-            var self = this, then;
+        _unwrap: function (value) {
+            var self = this, unwrapped = false, then;
 
             if (!value || (typeof value !== 'object' &&
                 typeof value !== 'function')) {
-                this.fulfill(value);
+                self.fulfill(value);
                 return;
             }
 
@@ -550,16 +556,23 @@ http://yuilibrary.com/license/
 
                 if (typeof then === 'function') {
                     then.call(value, function (value) {
-                        self._resolve(value);
+                        if (!unwrapped) {
+                            self._unwrap(value);
+                            unwrapped = true;
+                        }
                     }, function (reason) {
-                        self.reject(reason);
+                        if (!unwrapped) {
+                            self.reject(reason);
+                            unwrapped = true;
+                        }
                     });
-                    this._status = 'resolved';
                 } else {
-                    this.fulfill(value);
+                    self.fulfill(value);
                 }
             } catch (e) {
-                this.reject(e);
+                if (!unwrapped) {
+                    self.reject(e);
+                }
             }
         },
 
@@ -589,17 +602,15 @@ http://yuilibrary.com/license/
         "reject" resolutions of this resolver. If the resolver is not pending,
         the correct callback gets called automatically.
 
-        @method addCallbacks
+        @method _addCallbacks
         @param {Function} [callback] function to execute if the Resolver
                     resolves successfully
         @param {Function} [errback] function to execute if the Resolver
                     resolves unsuccessfully
         **/
-        addCallbacks: function (callback, errback) {
+        _addCallbacks: function (callback, errback) {
             var callbackList = this._callbacks,
-                errbackList  = this._errbacks,
-                status       = this._status,
-                result       = this._result;
+                errbackList  = this._errbacks;
 
             // Because the callback and errback are represented by a Resolver, it
             // must be fulfilled or rejected to propagate through the then() chain.
@@ -611,12 +622,16 @@ http://yuilibrary.com/license/
                 errbackList.push(errback);
             }
 
-            // If a promise is already fulfilled or rejected, notify the newly added
-            // callbacks by calling fulfill() or reject()
-            if (status === 'fulfilled') {
-                this.fulfill(result);
-            } else if (status === 'rejected') {
-                this.reject(result);
+            switch (this._status) {
+                case 'accepted':
+                    this._unwrap(this._value);
+                    break;
+                case 'fulfilled':
+                    this.fulfill(this._result);
+                    break;
+                case 'rejected':
+                    this.reject(this._result);
+                    break;
             }
         },
 

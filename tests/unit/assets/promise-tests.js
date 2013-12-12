@@ -4,7 +4,9 @@ YUI.add('promise-tests', function (Y) {
         ArrayAssert = Y.Test.ArrayAssert,
         isPromise = Promise.isPromise,
         wait = Y.fulfilledAfter,
-        rejectedAfter = Y.rejectedAfter;
+        rejectedAfter = Y.rejectedAfter,
+        dummy = {dummy: 'dummy'};
+
 
     // -- Suite --------------------------------------------------------------------
     var suite = new Y.Test.Suite({
@@ -177,6 +179,85 @@ YUI.add('promise-tests', function (Y) {
             });
 
             test.wait();
+        },
+
+        'resolution of a thenable for a thenable that fulfills twice': function () {
+            var dummy = { dummy: "dummy" };
+            var value = {foo: 'bar'},
+                other = {};
+
+            var promise = Promise.resolve(dummy).then(function () {
+                return {
+                    then: function (resolvePromise) {
+                        resolvePromise({
+                            then: function (onFulfilled) {
+                                onFulfilled({
+                                    then: function (onFulfilled) {
+                                        setTimeout(function () {
+                                            onFulfilled(value);
+                                        }, 0);
+                                    }
+                                });
+                                onFulfilled(other);
+                            }
+                        })
+                    }
+                };
+            });
+
+            this.isFulfilled(promise, function (result) {
+                Assert.areSame(value, result);
+            });
+        },
+
+        'resolution of a thenable for a thenable that fulfills and then throws': function () {
+            var value = {foo: 'bar'};
+
+            var promise = Promise.resolve(dummy).then(function () {
+                return {
+                    then: function (resolvePromise) {
+                        resolvePromise({
+                            then: function (onFulfilled) {
+                                onFulfilled({
+                                    then: function (onFulfilled) {
+                                        setTimeout(function () {
+                                            onFulfilled(value);
+                                        }, 0);
+                                    }
+                                });
+                                throw new Error('foo');
+                            }
+                        })
+                    }
+                };
+            });
+
+            this.isFulfilled(promise, function (result) {
+                Assert.areSame(value, result);
+            });
+        },
+
+        'resolution of a thenable that both fulfills and rejects': function () {
+            var value = {foo:'bar'};
+
+            var p1 = new Promise(function (resolve) {
+                setTimeout(function () {
+                    resolve(value);
+                }, 0);
+            });
+
+            var p2 = Promise.resolve(dummy).then(function () {
+                return {
+                    then: function (onFulfilled, onRejected) {
+                        onFulfilled(p1);
+                        onRejected(new Error('foo'));
+                    }
+                };
+            });
+
+            this.isFulfilled(p2, function (result) {
+                Assert.areSame(value, result);
+            });
         }
     }));
 
