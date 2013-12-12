@@ -357,9 +357,11 @@ http://yuilibrary.com/license/
     @param {Function} callback The function to call asynchronously
     @static
     **/
-    Promise.async = typeof setImmediate !== 'undefined' ? setImmediate : 
+    Promise.async = typeof setImmediate !== 'undefined' ?
+                        function (fn) {setImmediate(fn);} :
                     typeof process !== 'undefined' && process.nextTick ?
-                    process.nextTick : function (fn) {setTimeout(fn, 0);};
+                        process.nextTick :
+                    function (fn) {setTimeout(fn, 0);};
 
     /**
     Creates a 'deferred' object which simplifies how to share the capability to
