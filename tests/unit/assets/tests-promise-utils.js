@@ -1,7 +1,6 @@
 YUI.add('tests-promise-utils', function (Y) {
 
-    var Assert = Y.Assert,
-        Promise = Y.Promise;
+    var Assert = Y.Assert;
 
     Y.mix(Y.Test.Case.prototype, {
         /**

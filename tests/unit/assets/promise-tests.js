@@ -55,15 +55,10 @@ YUI.add('promise-tests', function (Y) {
             });
         },
 
-        'correct value for "this" inside the promise init function': function () {
-            var promiseA,
-                promiseB = new Promise(function () {
-                    promiseA = this;
-
-                    Assert.isInstanceOf(Promise, this, '"this" should be a promise');
-                });
-
-            Assert.areSame(promiseA, promiseB, 'the return value of Promise and "this" inside the init function should be the same');
+        'correct value for `this` inside the promise init function': function () {
+            var promise = new Promise(function () {
+                Assert.isUndefined(this, '`this` should be a undefined');
+            });
         },
 
         'callbacks passed to then should be called asynchronously': function () {
@@ -115,7 +110,7 @@ YUI.add('promise-tests', function (Y) {
         },
 
         'returning a promise from a callback should link both promises': function () {
-            var promise = Promise(function (resolve) {
+            var promise = new Promise(function (resolve) {
                 resolve('placeholder');
             }).then(function () {
                 return new Promise(function (resolve) {
@@ -132,7 +127,7 @@ YUI.add('promise-tests', function (Y) {
         '`this` inside a callback must be the global object': function () {
             var test = this,
                 fulfilled, rejected,
-                fulfilledThis, rejectedThis;
+                resolvedThis, rejectedThis;
 
             fulfilled = new Promise(function (resolve) {
                 resolve('value');
@@ -142,11 +137,11 @@ YUI.add('promise-tests', function (Y) {
             });
 
             fulfilled.then(function () {
-                fulfilledThis = this;
+                resolvedThis = this;
                 rejected.then(null, function () {
                     rejectedThis = this;
                     test.resume(function () {
-                        Assert.areSame(Y.config.global, fulfilledThis, 'when not in strict mode `this` in the success callback must be the global object');
+                        Assert.areSame(Y.config.global, resolvedThis, 'when not in strict mode `this` in the success callback must be the global object');
                         Assert.areSame(Y.config.global, rejectedThis, 'when not in strict mode `this` in the failure callback must be the global object');
                     });
                 });
@@ -161,7 +156,7 @@ YUI.add('promise-tests', function (Y) {
 
             var test = this,
                 fulfilled, rejected,
-                fulfilledThis, rejectedThis;
+                resolvedThis, rejectedThis;
 
             fulfilled = new Promise(function (resolve) {
                 resolve('value');
@@ -171,7 +166,7 @@ YUI.add('promise-tests', function (Y) {
             });
 
             fulfilled.then(function () {
-                fulfilledThis = this;
+                resolvedThis = this;
                 rejected.then(null, function () {
                     rejectedThis = this;
                     test.resume(function () {
@@ -353,7 +348,7 @@ YUI.add('promise-tests', function (Y) {
         'Promise.resolve() adopts the state of an fulfilled promise': function () {
             var value = {},
                 fulfilled = Promise.resolve(value),
-                promise = Promise.resolve(resolved);
+                promise = Promise.resolve(fulfilled);
 
             this.isFulfilled(promise, function (result) {
                 Assert.areSame(value, result, 'resolved promise should take the value of the provided promise');
@@ -363,7 +358,7 @@ YUI.add('promise-tests', function (Y) {
         'Promise.resolve() adopts the state of a rejected promise': function () {
             var value = {},
                 fulfilled = Promise.reject(value),
-                promise = Promise.resolve(resolved);
+                promise = Promise.resolve(fulfilled);
 
             this.isRejected(promise, function (result) {
                 Assert.areSame(value, result, 'resolved promise should take the value of the provided promise');
