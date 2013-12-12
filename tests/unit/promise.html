@@ -19,9 +19,13 @@ YUI({
     coverage: ['promise'],
     filter: (window.location.search.match(/[?&]filter=([^&]+)/) || [])[1] || 'raw',
     modules: {
+        'tests-promise-utils': {
+            fullpath: './assets/tests-promise-utils.js',
+            requires: ['test']
+        },
         'promise-tests':  {
             fullpath: './assets/promise-tests.js',
-            requires: ['promise', 'test']
+            requires: ['tests-promise-utils']
         }
     }
 }).use('promise-tests', 'test-console', function(Y) {
