@@ -15,7 +15,7 @@
 		"lib": "./lib"
 	},
 	"scripts": {
-		"test": "promises-aplus-tests tests/cli/adapter.js --bail true --timeout 3000",
+		"test": "promises-aplus-tests tests/cli/adapter.js && grover --server --coverage tests/unit/*.html",
 		"lint": ""
 	}
 }

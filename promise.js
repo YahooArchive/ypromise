@@ -557,13 +557,13 @@ http://yuilibrary.com/license/
                 if (typeof then === 'function') {
                     then.call(value, function (value) {
                         if (!unwrapped) {
-                            self._unwrap(value);
                             unwrapped = true;
+                            self._unwrap(value);
                         }
                     }, function (reason) {
                         if (!unwrapped) {
-                            self.reject(reason);
                             unwrapped = true;
+                            self.reject(reason);
                         }
                     });
                 } else {
