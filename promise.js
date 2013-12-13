@@ -28,8 +28,6 @@ http://yuilibrary.com/license/
         }
     }
 
-    function noop() {}
-
     /**
     A promise represents a value that may not yet be available. Promises allow
     you to chain asynchronous operations, write synchronous looking code and
