@@ -187,9 +187,7 @@ http://yuilibrary.com/license/
     @static
     @private
     **/
-    Promise._log = function (msg, type) {
-        console[type || 'info'](msg);
-    };
+    Promise._log = function (msg, type) {console[type || 'info'](msg);};
 
     /**
     Checks if an object or value is a promise. This is cross-implementation
