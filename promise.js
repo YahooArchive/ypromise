@@ -111,9 +111,9 @@ http://yuilibrary.com/license/
 
             this._resolver._addCallbacks(
                 typeof callback === 'function' ?
-                    Promise._wrap(promise, resolve, reject, callback) : resolve,
+                    Promise._makeCallback(promise, resolve, reject, callback) : resolve,
                 typeof errback === 'function' ?
-                    Promise._wrap(promise, resolve, reject, errback) : reject
+                    Promise._makeCallback(promise, resolve, reject, errback) : reject
             );
 
             return promise;
@@ -141,14 +141,14 @@ http://yuilibrary.com/license/
     Wraps the callback in another function to catch exceptions and turn them
     into rejections.
 
-    @method _wrap
+    @method _makeCallback
     @param {Promise} promise Promise that will be affected by this callback
     @param {Function} fn Callback to wrap
     @return {Function}
     @static
     @private
     **/
-    Promise._wrap = function (promise, resolve, reject, fn) {
+    Promise._makeCallback = function (promise, resolve, reject, fn) {
         // callbacks and errbacks only get one argument
         return function (valueOrReason) {
             var result;
