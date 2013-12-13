@@ -422,6 +422,7 @@ http://yuilibrary.com/license/
 
         @property promise
         @type Promise
+        @deprecated
         **/
         this.promise = promise;
 
@@ -611,6 +612,7 @@ http://yuilibrary.com/license/
         @deprecated
         **/
         then: function (callback, errback) {
+            Promise._log('resolver.then() is deprecated', 'warn');
             return this.promise.then(callback, errback);
         },
 
@@ -680,7 +682,7 @@ http://yuilibrary.com/license/
             }
         }
 
-    }, true);
+    });
 
     Promise.Resolver = Resolver;
 
