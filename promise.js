@@ -56,7 +56,8 @@ http://yuilibrary.com/license/
     **/
     function Promise(fn) {
         if (!(this instanceof Promise)) {
-            throw new TypeError('Promises should always be created with new Promise()');
+            Promise._log('Promises should always be created with new Promise(). This will throw an error in the future', 'error');
+            return new Promise(fn);
         }
 
         var resolver = new Promise.Resolver(this);
@@ -174,6 +175,20 @@ http://yuilibrary.com/license/
 
             resolve(result);
         };
+    };
+
+    /**
+    Logs a message. This method is designed to be overwritten with  YUI's `log`
+    function.
+
+    @method _log
+    @param {String} msg Message to log
+    @param {String} [type='info'] Log level. One of 'error', 'warn', 'debug', 'info'.
+    @static
+    @private
+    **/
+    Promise._log = function (msg, type) {
+        console[type || 'info'](msg);
     };
 
     /**
@@ -481,6 +496,7 @@ http://yuilibrary.com/license/
             if (status === 'pending' || status === 'accepted') {
                 this._result = reason;
                 this._status = 'rejected';
+                if (!this._errbacks.length) {Promise._log('Promise rejected but no error handlers were registered to it', 'warn');}
             }
 
             if (this._status === 'rejected') {
@@ -530,6 +546,19 @@ http://yuilibrary.com/license/
             }
         },
 
+        /**
+        If `value` is a promise or a thenable, it will be unwrapped by
+        recursively calling its `then` method. If not, the resolver will be
+        fulfilled with `value`.
+
+        This method is called when the promise's `then` method is called and
+        not in `resolve` to allow for lazy promises to be accepted and not
+        resolved immediately.
+
+        @method _unwrap
+        @param {Any} value A promise, thenable or regular value
+        @private
+        **/
         _unwrap: function (value) {
             var self = this, unwrapped = false, then;
 
