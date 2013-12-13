@@ -133,18 +133,6 @@ http://yuilibrary.com/license/
         */
         'catch': function (errback) {
             return this.then(undefined, errback);
-        },
-
-        /**
-        Returns the current status of the operation. Possible results are
-        "pending", "fulfilled", and "rejected".
-
-        @method getStatus
-        @return {String}
-        @deprecated
-        **/
-        getStatus: function () {
-            return this._resolver.getStatus();
         }
     });
 
@@ -633,18 +621,6 @@ http://yuilibrary.com/license/
                     this.reject(this._result);
                     break;
             }
-        },
-
-        /**
-        Returns the current status of the Resolver as a string "pending",
-        "fulfilled", or "rejected".
-
-        @method getStatus
-        @return {String}
-        @deprecated
-        **/
-        getStatus: function () {
-            return this._status;
         },
 
         /**
