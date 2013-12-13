@@ -17,7 +17,8 @@ YUI.add('promise-tests', function (Y) {
     suite.add(new Y.Test.Case({
         name: 'Basic promise behavior',
 
-        _should: {
+        // At some point this should be enabled
+        /*_should: {
             error: {
                 'calling Promise as a function should throw': true
             }
@@ -25,7 +26,7 @@ YUI.add('promise-tests', function (Y) {
 
         'calling Promise as a function should throw': function () {
             Promise(function () {});
-        },
+        },*/
 
         'promise.then returns a promise': function () {
             var promise = new Promise(function (resolve) {
@@ -78,6 +79,18 @@ YUI.add('promise-tests', function (Y) {
             Assert.areEqual(false, foo, 'callback should not modify local variable in this turn of the event loop');
 
             test.wait();
+        },
+
+        'correct return value for subclasses of Promise': function () {
+            function Subclass() {
+                Subclass.superclass.constructor.apply(this, arguments);
+            }
+            Y.extend(Subclass, Promise);
+
+            var promise = new Subclass(function () {}).then();
+
+            Assert.isInstanceOf(Promise, promise, 'then() return value should be an instance of Promise');
+            Assert.isInstanceOf(Subclass, promise, 'then() return value should be an instance of Subclass');
         }
 
     }));
