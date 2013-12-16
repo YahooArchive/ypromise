@@ -363,31 +363,6 @@ http://yuilibrary.com/license/
                     function (fn) {setTimeout(fn, 0);};
 
     /**
-    Creates a 'deferred' object which simplifies how to share the capability to
-    resolve or reject a promise.
-
-    @method deferred
-    @static
-    @return {Object} an object with three properties:
-
-     * `promise` a new promise
-     * `resolve` a function that resolves the promise
-     * `reject` a function that rejects the promise
-
-    **/
-    Promise.deferred = function () {
-        var Promise = this,
-            deferred = {};
-
-        deferred.promise = new Promise(function (resolve, reject) {
-            deferred.resolve = resolve;
-            deferred.reject = reject;
-        });
-
-        return deferred;
-    };
-
-    /**
     Represents an asynchronous operation. Provides a
     standard API for subscribing to the moment that the operation completes either
     successfully (`fulfill()`) or unsuccessfully (`reject()`).

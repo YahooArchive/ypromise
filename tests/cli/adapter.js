@@ -8,5 +8,12 @@ exports.rejected = function (reason) {
     return Promise.reject(reason);
 };
 exports.deferred = function () {
-    return Promise.deferred();
+	var deferred = {};
+
+	deferred.promise = new Promise(function (resolve, reject) {
+		deferred.resolve = resolve;
+		deferred.reject = reject;
+	});
+
+	return deferred;
 };
