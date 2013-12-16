@@ -107,3 +107,10 @@ rejection value is the first rejection value.
 #### Promise.race(list)
 Returns a Promise that fulfills when any item fulfills, and rejects if any item
 rejects. Esentially, the first promise to be settled wins the race.
+
+License
+-------
+This software is free to use under the Yahoo! Inc. BSD license.
+See the [LICENSE file][] for license text and copyright information.
+
+[LICENSE file]: https://github.com/juandopazo/yui-promise/blob/master/LICENSE.md
