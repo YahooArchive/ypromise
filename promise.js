@@ -56,7 +56,8 @@ http://yuilibrary.com/license/
     **/
     function Promise(fn) {
         if (!(this instanceof Promise)) {
-            throw new TypeError('Promises should always be created with new Promise()');
+            Promise._log('Promises should always be created with new Promise(). This will throw an error in the future', 'error');
+            return new Promise(fn);
         }
 
         var resolver = new Promise.Resolver(this);
@@ -100,7 +101,22 @@ http://yuilibrary.com/license/
                     "reject" callback
         **/
         then: function (callback, errback) {
-            return this._resolver.then(callback, errback);
+            // using this.constructor allows for customized promises to be
+            // returned instead of plain ones
+            var resolve, reject,
+                promise = new this.constructor(function (res, rej) {
+                    resolve = res;
+                    reject = rej;
+                });
+
+            this._resolver._addCallbacks(
+                typeof callback === 'function' ?
+                    Promise._makeCallback(promise, resolve, reject, callback) : resolve,
+                typeof errback === 'function' ?
+                    Promise._makeCallback(promise, resolve, reject, errback) : reject
+            );
+
+            return promise;
         },
 
         /*
@@ -118,20 +134,60 @@ http://yuilibrary.com/license/
         */
         'catch': function (errback) {
             return this.then(undefined, errback);
-        },
-
-        /**
-        Returns the current status of the operation. Possible results are
-        "pending", "fulfilled", and "rejected".
-
-        @method getStatus
-        @return {String}
-        @deprecated
-        **/
-        getStatus: function () {
-            return this._resolver.getStatus();
         }
     });
+
+    /**
+    Wraps the callback in another function to catch exceptions and turn them
+    into rejections.
+
+    @method _makeCallback
+    @param {Promise} promise Promise that will be affected by this callback
+    @param {Function} fn Callback to wrap
+    @return {Function}
+    @static
+    @private
+    **/
+    Promise._makeCallback = function (promise, resolve, reject, fn) {
+        // callbacks and errbacks only get one argument
+        return function (valueOrReason) {
+            var result;
+
+            // Promises model exception handling through callbacks
+            // making both synchronous and asynchronous errors behave
+            // the same way
+            try {
+                // Use the argument coming in to the callback/errback from the
+                // resolution of the parent promise.
+                // The function must be called as a normal function, with no
+                // special value for |this|, as per Promises A+
+                result = fn(valueOrReason);
+            } catch (e) {
+                // calling return only to stop here
+                reject(e);
+                return;
+            }
+
+            if (result === promise) {
+                reject(new TypeError('Cannot resolve a promise with itself'));
+                return;
+            }
+
+            resolve(result);
+        };
+    };
+
+    /**
+    Logs a message. This method is designed to be overwritten with  YUI's `log`
+    function.
+
+    @method _log
+    @param {String} msg Message to log
+    @param {String} [type='info'] Log level. One of 'error', 'warn', 'debug', 'info'.
+    @static
+    @private
+    **/
+    Promise._log = function (msg, type) {console[type || 'info'](msg);};
 
     /**
     Checks if an object or value is a promise. This is cross-implementation
@@ -300,34 +356,11 @@ http://yuilibrary.com/license/
     @param {Function} callback The function to call asynchronously
     @static
     **/
-    Promise.async = typeof setImmediate !== 'undefined' ? setImmediate : 
+    Promise.async = typeof setImmediate !== 'undefined' ?
+                        function (fn) {setImmediate(fn);} :
                     typeof process !== 'undefined' && process.nextTick ?
-                    process.nextTick : function (fn) {setTimeout(fn, 0);};
-
-    /**
-    Creates a 'deferred' object which simplifies how to share the capability to
-    resolve or reject a promise.
-
-    @method deferred
-    @static
-    @return {Object} an object with three properties:
-
-     * `promise` a new promise
-     * `resolve` a function that resolves the promise
-     * `reject` a function that rejects the promise
-
-    **/
-    Promise.deferred = function () {
-        var Promise = this,
-            deferred = {};
-
-        deferred.promise = new Promise(function (resolve, reject) {
-            deferred.resolve = resolve;
-            deferred.reject = reject;
-        });
-
-        return deferred;
-    };
+                        process.nextTick :
+                    function (fn) {setTimeout(fn, 0);};
 
     /**
     Represents an asynchronous operation. Provides a
@@ -362,6 +395,7 @@ http://yuilibrary.com/license/
 
         @property promise
         @type Promise
+        @deprecated
         **/
         this.promise = promise;
 
@@ -397,7 +431,9 @@ http://yuilibrary.com/license/
         @param {Any} value Value to pass along to the "onFulfilled" subscribers
         **/
         fulfill: function (value) {
-            if (this._status === 'pending') {
+            var status = this._status;
+
+            if (status === 'pending' || status === 'accepted') {
                 this._result = value;
                 this._status = 'fulfilled';
             }
@@ -429,9 +465,12 @@ http://yuilibrary.com/license/
         @param {Any} value Value to pass along to the "reject" subscribers
         **/
         reject: function (reason) {
-            if (this._status === 'pending') {
+            var status = this._status;
+
+            if (status === 'pending' || status === 'accepted') {
                 this._result = reason;
                 this._status = 'rejected';
+                if (!this._errbacks.length) {Promise._log('Promise rejected but no error handlers were registered to it', 'warn');}
             }
 
             if (this._status === 'rejected') {
@@ -470,18 +509,61 @@ http://yuilibrary.com/license/
         @param [Any] value A regular JS value or a promise
         */
         resolve: function (value) {
-            var self = this;
+            if (this._status === 'pending') {
+                this._status = 'accepted';
+                this._value = value;
 
-            if (value === this.promise) {
-                this.reject(new TypeError('Cannot resolve a promise to itself'));
-            } else if (Promise.isPromise(value)) {
-                value.then(function (value) {
-                    self.resolve(value);
-                }, function (reason) {
-                    self.reject(reason);
-                });
-            } else {
-                this.fulfill(value);
+                if ((this._callbacks && this._callbacks.length) ||
+                    (this._errbacks && this._errbacks.length)) {
+                    this._unwrap(this._value);
+                }
+            }
+        },
+
+        /**
+        If `value` is a promise or a thenable, it will be unwrapped by
+        recursively calling its `then` method. If not, the resolver will be
+        fulfilled with `value`.
+
+        This method is called when the promise's `then` method is called and
+        not in `resolve` to allow for lazy promises to be accepted and not
+        resolved immediately.
+
+        @method _unwrap
+        @param {Any} value A promise, thenable or regular value
+        @private
+        **/
+        _unwrap: function (value) {
+            var self = this, unwrapped = false, then;
+
+            if (!value || (typeof value !== 'object' &&
+                typeof value !== 'function')) {
+                self.fulfill(value);
+                return;
+            }
+
+            try {
+                then = value.then;
+
+                if (typeof then === 'function') {
+                    then.call(value, function (value) {
+                        if (!unwrapped) {
+                            unwrapped = true;
+                            self._unwrap(value);
+                        }
+                    }, function (reason) {
+                        if (!unwrapped) {
+                            unwrapped = true;
+                            self.reject(reason);
+                        }
+                    });
+                } else {
+                    self.fulfill(value);
+                }
+            } catch (e) {
+                if (!unwrapped) {
+                    self.reject(e);
+                }
             }
         },
 
@@ -500,96 +582,49 @@ http://yuilibrary.com/license/
                     resolves unsuccessfully
         @return {Promise} The promise of a new Resolver wrapping the resolution
                     of either "resolve" or "reject" callback
+        @deprecated
         **/
         then: function (callback, errback) {
-            // When the current promise is fulfilled or rejected, either the
-            // callback or errback will be executed via the function pushed onto
-            // this._callbacks or this._errbacks.  However, to allow then()
-            // chaining, the execution of either function needs to be represented
-            // by a Resolver (the same Resolver can represent both flow paths), and
-            // its promise returned.
-            var promise = this.promise,
-                thenFulfill, thenReject,
+            Promise._log('resolver.then() is deprecated', 'warn');
+            return this.promise.then(callback, errback);
+        },
 
-                // using promise constructor allows for customized promises to be
-                // returned instead of plain ones
-                then = new promise.constructor(function (fulfill, reject) {
-                    thenFulfill = fulfill;
-                    thenReject = reject;
-                }),
+        /**
+        Schedule execution of a callback to either or both of "resolve" and
+        "reject" resolutions of this resolver. If the resolver is not pending,
+        the correct callback gets called automatically.
 
-                callbackList = this._callbacks,
+        @method _addCallbacks
+        @param {Function} [callback] function to execute if the Resolver
+                    resolves successfully
+        @param {Function} [errback] function to execute if the Resolver
+                    resolves unsuccessfully
+        **/
+        _addCallbacks: function (callback, errback) {
+            var callbackList = this._callbacks,
                 errbackList  = this._errbacks;
 
             // Because the callback and errback are represented by a Resolver, it
             // must be fulfilled or rejected to propagate through the then() chain.
             // The same logic applies to resolve() and reject() for fulfillment.
             if (callbackList) {
-                callbackList.push(typeof callback === 'function' ?
-                    this._wrap(thenFulfill, thenReject, callback) : thenFulfill);
+                callbackList.push(callback);
             }
             if (errbackList) {
-                errbackList.push(typeof errback === 'function' ?
-                    this._wrap(thenFulfill, thenReject, errback) : thenReject);
+                errbackList.push(errback);
             }
 
-            // If a promise is already fulfilled or rejected, notify the newly added
-            // callbacks by calling fulfill() or reject()
-            if (this._status === 'fulfilled') {
-                this.fulfill(this._result);
-            } else if (this._status === 'rejected') {
-                this.reject(this._result);
+            switch (this._status) {
+                case 'accepted':
+                    this._unwrap(this._value);
+                    break;
+                case 'fulfilled':
+                    this.fulfill(this._result);
+                    break;
+                case 'rejected':
+                    this.reject(this._result);
+                    break;
             }
-
-            return then;
-        },
-
-        /**
-        Wraps the callback in another function to catch exceptions and turn them
-        into rejections.
-
-        @method _wrap
-        @param {Function} thenResolve Fulfillment function of the resolver that
-                            handles this promise
-        @param {Function} thenReject Rejection function of the resolver that
-                            handles this promise
-        @param {Function} fn Callback to wrap
-        @return {Function}
-        @private
-        **/
-        _wrap: function (thenResolve, thenReject, fn) {
-            // callbacks and errbacks only get one argument
-            return function (valueOrReason) {
-                var result;
-
-                // Promises model exception handling through callbacks
-                // making both synchronous and asynchronous errors behave
-                // the same way
-                try {
-                    // Use the argument coming in to the callback/errback from the
-                    // resolution of the parent promise.
-                    // The function must be called as a normal function, with no
-                    // special value for |this|, as per Promises A+
-                    result = fn(valueOrReason);
-                } catch (e) {
-                    // calling return only to stop here
-                    return thenReject(e);
-                }
-
-                thenResolve(result);
-            };
-        },
-
-        /**
-        Returns the current status of the Resolver as a string "pending",
-        "fulfilled", or "rejected".
-
-        @method getStatus
-        @return {String}
-        @deprecated
-        **/
-        getStatus: function () {
-            return this._status;
         },
 
         /**
@@ -620,7 +655,7 @@ http://yuilibrary.com/license/
             }
         }
 
-    }, true);
+    });
 
     Promise.Resolver = Resolver;
 
