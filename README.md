@@ -22,14 +22,14 @@ YUI promises can be loaded as:
 
 #### Installation
 
-To use YUI promises in Node.js, add the `yui-promise` module to the dependency
-list in your project's `package.json` file:
+To use YUI promises in Node.js, add the `yui-promise` module to your dependencies
+in the `package.json` file of your project:
 
 ```
 {
-    "dependencies": {
-        "yui-promise": "0.0.4"
-    }
+	"dependencies": {
+		"yui-promise": "0.0.3"
+	}
 }
 ```
 
@@ -47,57 +47,63 @@ The `yui-promise` module exports the Promise constructor:
 var Promise = require('yui-promise');
 
 function asyncFunction() {
-    return new Promise(function (resolve, reject) {
-        resolve('Hello world');
-    });
+	return new Promise(function (resolve, reject) {
+		resolve('Hello world');
+	});
 }
 ```
 
-### Bower
+Promise API reference
+---------------------
 
-To use YUI promises in a Bower project, add the `yui-promise` module to the
-dependency list in your project's `bower.json` file:
-
-```
-{
-    "dependencies": {
-        "yui-promise": "git://github.com/juandopazo/yui-promise.git"
-    }
-}
-```
-
-Install it using `bower`:
-
-```
-$ bower install yui-promise
-```
-
-#### Usage
-
-Once installed, you can use the promises module as an AMD module, a YUI module
-or a global polyfill of the standard [Promise API](https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Promise.jsm/Promise).
+### Constructor
 
 ```js
-// Using Require.js
-require(['./bower-components/yui-promise'], function (Promise) {
-    function asyncFunction() {
-        return new Promise(function (resolve, reject) {
-            resolve('Hello world');
-        });
-    }
-});
+new Promise(function (resolve, reject) {});
 ```
 
-### YUI
+#### resolve(value)
+If `value` is a promise or a thenable, the new promise will adopt its value once
+it settles.
 
-The promises module is provided by YUI in each release of the library.
+#### reject(reason)
+Your promise is rejected with `reason`. For consistency and debugging it is
+encouraged that `reason` is an instance of `Error`.
 
-```js
-YUI().use('promise', function (Y) {
-    function asyncFunction() {
-        return new Y.Promise(function (resolve, reject) {
-            resolve('Hello world');
-        });
-    }
-});
-```
+### Instance methods
+
+#### promise.then(onFulfilled, onRejected)
+`onFulfilled` is called when/if "promise" resolves. `onRejected` is called
+when/if "promise" rejects. Both are optional, if either/both are omitted the
+next `onFulfilled`/`onRejected` in the chain is called. Both callbacks have a
+single parameter, the fulfillment value or rejection reason. `then` returns a
+new promise equivalent to the value you return from `onFulfilled`/`onRejected`
+after being passed through `Promise.resolve`. If an error is thrown in the
+callback, the returned promise rejects with that error.
+
+#### promise.catch(onRejected)
+Sugar for `promise.then(undefined, onRejected)`.
+
+### Static methods
+
+#### Promise.cast(value)
+Always returns a promise. If `value` is a promise and its constructor is `Promise`
+`cast` will return it without modifying it. Otherwise, `cast` will return a new
+promise that resolves to `value`.
+
+#### Promise.resolve(value)
+Returns a promise resolved with `value`. Sugar for `new Promise(function (resolve) { resolve(value); })`.
+
+#### Promise.reject(reason)
+Returns a promise rejected with `reason`. Sugar for `new Promise(function (resolve, reject) { reject(value); })`.
+
+#### Promise.all(list)
+Returns a promise that fulfills when every item in the array fulfills, and
+rejects if (and when) any item rejects. Each array item is passed to
+`Promise.cast`, so the array can be a mixture of promise-like objects and other
+objects. The fulfillment value is an array (in order) of fulfillment values. The
+rejection value is the first rejection value.
+
+#### Promise.race(list)
+Returns a Promise that fulfills when any item fulfills, and rejects if any item
+rejects. Esentially, the first promise to be settled wins the race.
