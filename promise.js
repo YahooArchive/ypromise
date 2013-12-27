@@ -9,7 +9,7 @@ http://yuilibrary.com/license/
         module.exports = built;
     }
     if (typeof define === 'function' && define.amd) {
-        define(built);
+        define(factory);
     }
     if (!global.Promise) {
         global.Promise = built;

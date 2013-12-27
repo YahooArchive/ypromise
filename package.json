@@ -1,6 +1,6 @@
 {
 	"name": "yui-promise",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Standalone version of YUI promises",
 	"repository": {
         "type": "git",
@@ -9,7 +9,8 @@
 	"main": "promise.js",
 	"devDependencies": {
 		"promises-aplus-tests": "2.0.3",
-		"grover": "0.1.17"
+		"grover": "0.1.17",
+		"requirejs": "~2.1.9"
 	},
 	"directories": {
 		"lib": "./lib"
