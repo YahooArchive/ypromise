@@ -16,6 +16,12 @@ http://yuilibrary.com/license/
     }
 }(this, function () {
 
+    var STATUS    = '{private:status}',
+        VALUE     = '{private:value}',
+        WITNESS   = '{private:witness}',
+        CALLBACKS = '{private:callbacks}',
+        ERRBACKS  = '{private:errbacks}';
+
     function isArray(obj) {
         return Object.prototype.toString.call(obj) === '[object Array]';
     }
@@ -26,6 +32,252 @@ http://yuilibrary.com/license/
                 obj[prop] = props[prop];
             }
         }
+    }
+
+    function noop() {}
+
+    /**
+    Resolves the promise, signaling successful completion of the
+    represented operation. All "onFulfilled" subscriptions are executed and passed
+    the value provided to this method. After calling `fulfill()`, `reject()` and
+    `notify()` are disabled.
+
+    @param {Promise} promise The promise to fulfill
+    @param {Any} value Value to pass along to the "onFulfilled" subscribers
+    **/
+    function fulfill(promise, value) {
+        var status = promise[STATUS];
+
+        if (status === 'pending' || status === 'accepted') {
+            promise[VALUE]  = value;
+            promise[STATUS] = 'fulfilled';
+        }
+
+        if (promise[STATUS] === 'fulfilled') {
+            notify(promise[CALLBACKS], promise[VALUE]);
+
+            // Reset the callback list so that future calls to fulfill()
+            // won't call the same callbacks again. Promises keep a list
+            // of callbacks, they're not the same as events. In practice,
+            // calls to fulfill() after the first one should not be made by
+            // the user but by then()
+            promise[CALLBACKS] = [];
+
+            // Once a promise gets fulfilled it can't be rejected, so
+            // there is no point in keeping the list. Remove it to help
+            // garbage collection
+            promise[ERRBACKS]  = null;
+        }
+    }
+
+    /**
+    Resolves the promise, signaling *un*successful completion of the
+    represented operation. All "onRejected" subscriptions are executed with
+    the value provided to this method. After calling `reject()`, `resolve()`
+    and `notify()` are disabled.
+
+    @param {Promise} promise The promise to reject
+    @param {Any} value Value to pass along to the "reject" subscribers
+    **/
+    function reject(promise, reason) {
+        var status = promise[STATUS];
+
+        if (status === 'pending' || status === 'accepted') {
+            promise[VALUE]  = reason;
+            promise[STATUS] = 'rejected';
+            if (!promise[ERRBACKS].length) {Promise._log('Promise rejected but no error handlers were registered to it', 'warn');}
+        }
+
+        if (promise[STATUS] === 'rejected') {
+            notify(promise[ERRBACKS], promise[VALUE]);
+
+            // See fulfill()
+            promise[CALLBACKS] = null;
+            promise[ERRBACKS]  = [];
+        }
+    }
+
+    /*
+    Given a certain value A passed as a parameter, this method resolves the
+    promise to the value A.
+
+    If A is a promise, `resolve` will cause the resolver to adopt the state of A
+    and once A is resolved, it will resolve the resolver's promise as well.
+    This behavior "flattens" A by calling `then` recursively and essentially
+    disallows promises-for-promises.
+
+    This is the default algorithm used when using the function passed as the
+    first argument to the promise initialization function. This means that
+    the following code returns a promise for the value 'hello world':
+
+        var promise1 = new Promise(function (resolve) {
+            resolve('hello world');
+        });
+        var promise2 = new Promise(function (resolve) {
+            resolve(promise1);
+        });
+        promise2.then(function (value) {
+            assert(value === 'hello world'); // true
+        });
+
+    @param {Promise} promise The promise to resolve
+    @param {Any} value A regular JS value or a promise
+    */
+    function resolve(promise, value) {
+        if (promise[STATUS] === 'pending') {
+            promise[STATUS] = 'accepted';
+            promise[WITNESS] = value;
+
+            if ((promise[CALLBACKS] && promise[CALLBACKS].length) ||
+                (promise[ERRBACKS] && promise[ERRBACKS].length)) {
+                unwrap(promise, value);
+            }
+        }
+    }
+
+    /**
+    If `value` is a promise or a thenable, it will be unwrapped by
+    recursively calling its `then` method. If not, the resolver will be
+    fulfilled with `value`.
+
+    This method is called when the promise's `then` method is called and
+    not in `resolve` to allow for lazy promises to be accepted and not
+    resolved immediately.
+
+    @param {Promise} promise Promise to unwrap the value to
+    @param {Any} value A promise, thenable or regular value
+    **/
+    function unwrap(promise, value) {
+        var unwrapped = false, then;
+
+        if (!value || (typeof value !== 'object' &&
+            typeof value !== 'function')) {
+            fulfill(promise, value);
+            return;
+        }
+
+        try {
+            then = value.then;
+
+            if (typeof then === 'function') {
+                then.call(value, function (value) {
+                    if (!unwrapped) {
+                        unwrapped = true;
+                        unwrap(promise, value);
+                    }
+                }, function (reason) {
+                    if (!unwrapped) {
+                        unwrapped = true;
+                        reject(promise, reason);
+                    }
+                });
+            } else {
+                fulfill(promise, value);
+            }
+        } catch (e) {
+            if (!unwrapped) {
+                reject(promise, e);
+            }
+        }
+    }
+
+    /**
+    Schedule execution of a callback to either or both of "resolve" and
+    "reject" resolutions of this resolver. If the resolver is not pending,
+    the correct callback gets called automatically.
+
+    @param {Function} [callback] function to execute if the Resolver
+                resolves successfully
+    @param {Function} [errback] function to execute if the Resolver
+                resolves unsuccessfully
+    **/
+    function addCallbacks(promise, callback, errback) {
+        var callbackList = promise[CALLBACKS],
+            errbackList  = promise[ERRBACKS];
+
+        // Because the callback and errback are represented by a Resolver, it
+        // must be fulfilled or rejected to propagate through the then() chain.
+        // The same logic applies to resolve() and reject() for fulfillment.
+        if (callbackList) {
+            callbackList.push(callback);
+        }
+        if (errbackList) {
+            errbackList.push(errback);
+        }
+
+        switch (promise[STATUS]) {
+            case 'accepted':
+                unwrap(promise, promise[WITNESS]);
+                break;
+            case 'fulfilled':
+                fulfill(promise, promise[VALUE]);
+                break;
+            case 'rejected':
+                reject(promise, promise[VALUE]);
+                break;
+        }
+    }
+
+    /**
+    Executes an array of callbacks from a specified context, passing a set of
+    arguments.
+
+    @param {Function[]} subs The array of subscriber callbacks
+    @param {Any} result Value to pass the callbacks
+    **/
+    function notify(subs, result) {
+        // Since callback lists are reset synchronously, the subs list never
+        // changes after _notify() receives it. Avoid calling Y.soon() for
+        // an empty list
+        if (subs.length) {
+            // Calling all callbacks after Promise.async to guarantee
+            // asynchronicity. Because setTimeout can cause unnecessary
+            // delays that *can* become noticeable in some situations
+            // (especially in Node.js)
+            Promise.async(function () {
+                var i, len;
+
+                for (i = 0, len = subs.length; i < len; ++i) {
+                    subs[i](result);
+                }
+            });
+        }
+    }
+
+    /**
+    Wraps the callback in another function to catch exceptions and turn them
+    into rejections.
+    @param {Object} deferred Object with '{promise,resolve,reject}' properties
+    @param {Function} callback Callback to wrap
+    @return {Function}
+    **/
+    function wrapCallback(deferred, callback) {
+        // callbacks and errbacks only get one argument
+        return function (valueOrReason) {
+            var result;
+
+            // Promises model exception handling through callbacks
+            // making both synchronous and asynchronous errors behave
+            // the same way
+            try {
+                // Use the argument coming in to the callback/errback from the
+                // resolution of the parent promise.
+                // The function must be called as a normal function, with no
+                // special value for |this|, as per Promises A+
+                result = callback(valueOrReason);
+            } catch (e) {
+                // calling return only to stop here
+                deferred.reject(e);
+                return;
+            }
+
+            if (result === deferred.promise) {
+                deferred.reject(new TypeError('Cannot resolve a promise with itself'));
+                return;
+            }
+
+            deferred.resolve(result);
+        };
     }
 
     /**
@@ -56,29 +308,25 @@ http://yuilibrary.com/license/
     **/
     function Promise(fn) {
         if (!(this instanceof Promise)) {
-            Promise._log('Promises should always be created with new Promise(). This will throw an error in the future', 'error');
-            return new Promise(fn);
+            throw new TypeError('Promises should always be created with new Promise()');
         }
 
-        var resolver = new Promise.Resolver(this);
+        var promise = this;
 
-        /**
-        A reference to the resolver object that handles this promise
-
-        @property _resolver
-        @type Object
-        @private
-        */
-        this._resolver = resolver;
+        promise[STATUS]    = 'pending';
+        promise[VALUE]     = null;
+        promise[WITNESS]   = null;
+        promise[CALLBACKS] = [];
+        promise[ERRBACKS]  = [];
 
         try {
             fn(function (value) {
-                resolver.resolve(value);
+                resolve(promise, value);
             }, function (reason) {
-                resolver.reject(reason);
+                reject(promise, reason);
             });
         } catch (e) {
-            resolver.reject(e);
+            reject(promise, e);
         }
     }
 
@@ -101,22 +349,18 @@ http://yuilibrary.com/license/
                     "reject" callback
         **/
         then: function (callback, errback) {
-            // using this.constructor allows for customized promises to be
+            // using this._defer() allows for subclassed promises to be
             // returned instead of plain ones
-            var resolve, reject,
-                promise = new this.constructor(function (res, rej) {
-                    resolve = res;
-                    reject = rej;
-                });
+            var deferred = this.constructor._defer();
 
-            this._resolver._addCallbacks(
+            addCallbacks(this,
                 typeof callback === 'function' ?
-                    Promise._makeCallback(promise, resolve, reject, callback) : resolve,
+                    wrapCallback(deferred, callback) : deferred.resolve,
                 typeof errback === 'function' ?
-                    Promise._makeCallback(promise, resolve, reject, errback) : reject
+                    wrapCallback(deferred, errback) : deferred.reject
             );
 
-            return promise;
+            return deferred.promise;
         },
 
         /*
@@ -137,43 +381,22 @@ http://yuilibrary.com/license/
         }
     });
 
-    /**
-    Wraps the callback in another function to catch exceptions and turn them
-    into rejections.
-
-    @method _makeCallback
-    @param {Promise} promise Promise that will be affected by this callback
-    @param {Function} fn Callback to wrap
-    @return {Function}
-    @static
-    @private
-    **/
-    Promise._makeCallback = function (promise, resolve, reject, fn) {
-        // callbacks and errbacks only get one argument
-        return function (valueOrReason) {
-            var result;
-
-            // Promises model exception handling through callbacks
-            // making both synchronous and asynchronous errors behave
-            // the same way
-            try {
-                // Use the argument coming in to the callback/errback from the
-                // resolution of the parent promise.
-                // The function must be called as a normal function, with no
-                // special value for |this|, as per Promises A+
-                result = fn(valueOrReason);
-            } catch (e) {
-                // calling return only to stop here
-                reject(e);
-                return;
-            }
-
-            if (result === promise) {
-                reject(new TypeError('Cannot resolve a promise with itself'));
-                return;
-            }
-
-            resolve(result);
+    Promise._defer = function () {
+        noop.prototype = this.prototype;
+        var promise = new noop();
+        promise[STATUS]    = 'pending';
+        promise[VALUE]     = null;
+        promise[WITNESS]   = null;
+        promise[CALLBACKS] = [];
+        promise[ERRBACKS]  = [];
+        return {
+            resolve: function (value) {
+                resolve(promise, value);
+            },
+            reject: function (reason) {
+                reject(promise, reason);
+            },
+            promise: promise
         };
     };
 
@@ -187,31 +410,7 @@ http://yuilibrary.com/license/
     @static
     @private
     **/
-    Promise._log = function (msg, type) {console[type || 'info'](msg);};
-
-    /**
-    Checks if an object or value is a promise. This is cross-implementation
-    compatible, so promises returned from other libraries or native components
-    that are compatible with the Promises A+ spec should be recognized by this
-    method.
-
-    @method isPromise
-    @param {Any} obj The object to test
-    @return {Boolean} Whether the object is a promise or not
-    @static
-    **/
-    Promise.isPromise = function (obj) {
-        var then;
-        // We test promises by structure to be able to identify other
-        // implementations' promises. This is important for cross compatibility and
-        // In particular Y.when which should recognize any kind of promise
-        // Use try...catch when retrieving obj.then. Return false if it throws
-        // See Promises/A+ 1.1
-        try {
-            then = obj.then;
-        } catch (_) {}
-        return typeof then === 'function';
-    };
+    Promise._log = typeof console === 'undefined' ? function () {} : function (msg, type) {console[type || 'info'](msg);};
 
     /*
     Ensures that a certain value is a promise. If it is not a promise, it wraps it
@@ -228,12 +427,12 @@ http://yuilibrary.com/license/
     @static
     */
     Promise.cast = function (value) {
-        return Promise.isPromise(value) && value.constructor === this ? value :
-            /*jshint newcap: false */
-            new this(function (resolve) {
-            /*jshint newcap: true */
-                resolve(value);
-            });
+        if (Promise.isPromise(value) && value.constructor === this) {
+            return value;
+        }
+        var deferred = this._defer();
+        deferred.resolve(value);
+        return deferred.promise;
     };
 
     /*
@@ -246,14 +445,12 @@ http://yuilibrary.com/license/
     @static
     */
     Promise.reject = function (reason) {
-        /*jshint newcap: false */
-        var promise = new this(function () {});
-       /*jshint newcap: true */
+        var promise = this._defer().promise;
 
        // Do not go through resolver.reject() because an immediately rejected promise
        // always has no callbacks which would trigger an unnecessary warnihg
-       promise._resolver._result = reason;
-       promise._resolver._status = 'rejected';
+       promise[VALUE] = reason;
+       promise[STATUS] = 'rejected';
 
        return promise;
     };
@@ -267,11 +464,9 @@ http://yuilibrary.com/license/
     @static
     */
     Promise.resolve = function (value) {
-        /*jshint newcap: false */
-        return new this(function (resolve) {
-        /*jshint newcap: true */
-            resolve(value);
-        });
+        var deferred = this._defer();
+        deferred.resolve(value);
+        return deferred.promise;
     };
 
     /*
@@ -286,38 +481,38 @@ http://yuilibrary.com/license/
     @static
     */
     Promise.all = function (values) {
-        var Promise = this;
-        return new Promise(function (resolve, reject) {
-            if (!isArray(values)) {
-                reject(new TypeError('Promise.all expects an array of values or promises'));
-                return;
-            }
+        var deferred = this._defer(),
+            remaining, length,
+            i = 0,
+            results = [];
 
-            var remaining = values.length,
-                i         = 0,
-                length    = values.length,
-                results   = [];
+        if (!isArray(values)) {
+            return deferred.reject(new TypeError('Promise.all expects an array of values or promises'));
+        }
 
-            function oneDone(index) {
-                return function (value) {
-                    results[index] = value;
+        remaining = length = values.length;
 
-                    remaining--;
+        function oneDone(index) {
+            return function (value) {
+                results[index] = value;
 
-                    if (!remaining) {
-                        resolve(results);
-                    }
-                };
-            }
+                remaining--;
 
-            if (length < 1) {
-                return resolve(results);
-            }
+                if (!remaining) {
+                    deferred.resolve(results);
+                }
+            };
+        }
 
-            for (; i < length; i++) {
-                Promise.cast(values[i]).then(oneDone(i), reject);
-            }
-        });
+        if (length < 1) {
+            return deferred.resolve(results);
+        }
+
+        for (; i < length; i++) {
+            this.cast(values[i]).then(oneDone(i), deferred.reject);
+        }
+
+        return deferred.promise;
     };
 
     /*
@@ -331,20 +526,21 @@ http://yuilibrary.com/license/
     @static
     */
     Promise.race = function (values) {
-        var Promise = this;
-        return new Promise(function (resolve, reject) {
-            if (!isArray(values)) {
-                reject(new TypeError('Promise.race expects an array of values or promises'));
-                return;
-            }
-            
-            // just go through the list and resolve and reject at the first change
-            // This abuses the fact that calling resolve/reject multiple times
-            // doesn't change the state of the returned promise
-            for (var i = 0, count = values.length; i < count; i++) {
-                Promise.cast(values[i]).then(resolve, reject);
-            }
-        });
+        var deferred = this._defer(),
+            i = 0, count;
+
+        if (!isArray(values)) {
+            return deferred.reject(new TypeError('Promise.race expects an array of values or promises'));
+        }
+        
+        // just go through the list and resolve and reject at the first change
+        // This abuses the fact that calling resolve/reject multiple times
+        // doesn't change the state of the returned promise
+        for (count = values.length; i < count; i++) {
+            this.cast(values[i]).then(deferred.resolve, deferred.reject);
+        }
+
+        return deferred.promise;
     };
 
     /**
@@ -361,303 +557,6 @@ http://yuilibrary.com/license/
                     typeof process !== 'undefined' && process.nextTick ?
                         process.nextTick :
                     function (fn) {setTimeout(fn, 0);};
-
-    /**
-    Represents an asynchronous operation. Provides a
-    standard API for subscribing to the moment that the operation completes either
-    successfully (`fulfill()`) or unsuccessfully (`reject()`).
-
-    @class Promise.Resolver
-    @constructor
-    @param {Promise} promise The promise instance this resolver will be handling
-    **/
-    function Resolver(promise) {
-        /**
-        List of success callbacks
-
-        @property _callbacks
-        @type Array
-        @private
-        **/
-        this._callbacks = [];
-
-        /**
-        List of failure callbacks
-
-        @property _errbacks
-        @type Array
-        @private
-        **/
-        this._errbacks = [];
-
-        /**
-        The promise for this Resolver.
-
-        @property promise
-        @type Promise
-        @deprecated
-        **/
-        this.promise = promise;
-
-        /**
-        The status of the operation. This property may take only one of the following
-        values: 'pending', 'fulfilled' or 'rejected'.
-
-        @property _status
-        @type String
-        @default 'pending'
-        @private
-        **/
-        this._status = 'pending';
-
-        /**
-        This value that this promise represents.
-
-        @property _result
-        @type Any
-        @private
-        **/
-        this._result = null;
-    }
-
-    assign(Resolver.prototype, {
-        /**
-        Resolves the promise, signaling successful completion of the
-        represented operation. All "onFulfilled" subscriptions are executed and passed
-        the value provided to this method. After calling `fulfill()`, `reject()` and
-        `notify()` are disabled.
-
-        @method fulfill
-        @param {Any} value Value to pass along to the "onFulfilled" subscribers
-        **/
-        fulfill: function (value) {
-            var status = this._status;
-
-            if (status === 'pending' || status === 'accepted') {
-                this._result = value;
-                this._status = 'fulfilled';
-            }
-
-            if (this._status === 'fulfilled') {
-                this._notify(this._callbacks, this._result);
-
-                // Reset the callback list so that future calls to fulfill()
-                // won't call the same callbacks again. Promises keep a list
-                // of callbacks, they're not the same as events. In practice,
-                // calls to fulfill() after the first one should not be made by
-                // the user but by then()
-                this._callbacks = [];
-
-                // Once a promise gets fulfilled it can't be rejected, so
-                // there is no point in keeping the list. Remove it to help
-                // garbage collection
-                this._errbacks = null;
-            }
-        },
-
-        /**
-        Resolves the promise, signaling *un*successful completion of the
-        represented operation. All "onRejected" subscriptions are executed with
-        the value provided to this method. After calling `reject()`, `resolve()`
-        and `notify()` are disabled.
-
-        @method reject
-        @param {Any} value Value to pass along to the "reject" subscribers
-        **/
-        reject: function (reason) {
-            var status = this._status;
-
-            if (status === 'pending' || status === 'accepted') {
-                this._result = reason;
-                this._status = 'rejected';
-                if (!this._errbacks.length) {Promise._log('Promise rejected but no error handlers were registered to it', 'warn');}
-            }
-
-            if (this._status === 'rejected') {
-                this._notify(this._errbacks, this._result);
-
-                // See fulfill()
-                this._callbacks = null;
-                this._errbacks = [];
-            }
-        },
-
-        /*
-        Given a certain value A passed as a parameter, this method resolves the
-        promise to the value A.
-
-        If A is a promise, `resolve` will cause the resolver to adopt the state of A
-        and once A is resolved, it will resolve the resolver's promise as well.
-        This behavior "flattens" A by calling `then` recursively and essentially
-        disallows promises-for-promises.
-
-        This is the default algorithm used when using the function passed as the
-        first argument to the promise initialization function. This means that
-        the following code returns a promise for the value 'hello world':
-
-            var promise1 = new Promise(function (resolve) {
-                resolve('hello world');
-            });
-            var promise2 = new Promise(function (resolve) {
-                resolve(promise1);
-            });
-            promise2.then(function (value) {
-                assert(value === 'hello world'); // true
-            });
-
-        @method resolve
-        @param [Any] value A regular JS value or a promise
-        */
-        resolve: function (value) {
-            if (this._status === 'pending') {
-                this._status = 'accepted';
-                this._value = value;
-
-                if ((this._callbacks && this._callbacks.length) ||
-                    (this._errbacks && this._errbacks.length)) {
-                    this._unwrap(this._value);
-                }
-            }
-        },
-
-        /**
-        If `value` is a promise or a thenable, it will be unwrapped by
-        recursively calling its `then` method. If not, the resolver will be
-        fulfilled with `value`.
-
-        This method is called when the promise's `then` method is called and
-        not in `resolve` to allow for lazy promises to be accepted and not
-        resolved immediately.
-
-        @method _unwrap
-        @param {Any} value A promise, thenable or regular value
-        @private
-        **/
-        _unwrap: function (value) {
-            var self = this, unwrapped = false, then;
-
-            if (!value || (typeof value !== 'object' &&
-                typeof value !== 'function')) {
-                self.fulfill(value);
-                return;
-            }
-
-            try {
-                then = value.then;
-
-                if (typeof then === 'function') {
-                    then.call(value, function (value) {
-                        if (!unwrapped) {
-                            unwrapped = true;
-                            self._unwrap(value);
-                        }
-                    }, function (reason) {
-                        if (!unwrapped) {
-                            unwrapped = true;
-                            self.reject(reason);
-                        }
-                    });
-                } else {
-                    self.fulfill(value);
-                }
-            } catch (e) {
-                if (!unwrapped) {
-                    self.reject(e);
-                }
-            }
-        },
-
-        /**
-        Schedule execution of a callback to either or both of "resolve" and
-        "reject" resolutions for the Resolver.  The callbacks
-        are wrapped in a new Resolver and that Resolver's corresponding promise
-        is returned.  This allows operation chaining ala
-        `functionA().then(functionB).then(functionC)` where `functionA` returns
-        a promise, and `functionB` and `functionC` _may_ return promises.
-
-        @method then
-        @param {Function} [callback] function to execute if the Resolver
-                    resolves successfully
-        @param {Function} [errback] function to execute if the Resolver
-                    resolves unsuccessfully
-        @return {Promise} The promise of a new Resolver wrapping the resolution
-                    of either "resolve" or "reject" callback
-        @deprecated
-        **/
-        then: function (callback, errback) {
-            Promise._log('resolver.then() is deprecated', 'warn');
-            return this.promise.then(callback, errback);
-        },
-
-        /**
-        Schedule execution of a callback to either or both of "resolve" and
-        "reject" resolutions of this resolver. If the resolver is not pending,
-        the correct callback gets called automatically.
-
-        @method _addCallbacks
-        @param {Function} [callback] function to execute if the Resolver
-                    resolves successfully
-        @param {Function} [errback] function to execute if the Resolver
-                    resolves unsuccessfully
-        **/
-        _addCallbacks: function (callback, errback) {
-            var callbackList = this._callbacks,
-                errbackList  = this._errbacks;
-
-            // Because the callback and errback are represented by a Resolver, it
-            // must be fulfilled or rejected to propagate through the then() chain.
-            // The same logic applies to resolve() and reject() for fulfillment.
-            if (callbackList) {
-                callbackList.push(callback);
-            }
-            if (errbackList) {
-                errbackList.push(errback);
-            }
-
-            switch (this._status) {
-                case 'accepted':
-                    this._unwrap(this._value);
-                    break;
-                case 'fulfilled':
-                    this.fulfill(this._result);
-                    break;
-                case 'rejected':
-                    this.reject(this._result);
-                    break;
-            }
-        },
-
-        /**
-        Executes an array of callbacks from a specified context, passing a set of
-        arguments.
-
-        @method _notify
-        @param {Function[]} subs The array of subscriber callbacks
-        @param {Any} result Value to pass the callbacks
-        @protected
-        **/
-        _notify: function (subs, result) {
-            // Since callback lists are reset synchronously, the subs list never
-            // changes after _notify() receives it. Avoid calling Y.soon() for
-            // an empty list
-            if (subs.length) {
-                // Calling all callbacks after Promise.async to guarantee
-                // asynchronicity. Because setTimeout can cause unnecessary
-                // delays that *can* become noticeable in some situations
-                // (especially in Node.js)
-                Promise.async(function () {
-                    var i, len;
-
-                    for (i = 0, len = subs.length; i < len; ++i) {
-                        subs[i](result);
-                    }
-                });
-            }
-        }
-
-    });
-
-    Promise.Resolver = Resolver;
 
     return Promise;
 
