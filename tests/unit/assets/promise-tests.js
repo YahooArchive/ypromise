@@ -86,6 +86,7 @@ YUI.add('promise-tests', function (Y) {
                 Subclass.superclass.constructor.apply(this, arguments);
             }
             Y.extend(Subclass, Promise);
+            Subclass._defer = Promise._defer;
 
             var promise = new Subclass(function () {}).then();
 
@@ -213,7 +214,7 @@ YUI.add('promise-tests', function (Y) {
                                 });
                                 onFulfilled(other);
                             }
-                        })
+                        });
                     }
                 };
             });
@@ -240,7 +241,7 @@ YUI.add('promise-tests', function (Y) {
                                 });
                                 throw new Error('foo');
                             }
-                        })
+                        });
                     }
                 };
             });
@@ -298,7 +299,7 @@ YUI.add('promise-tests', function (Y) {
             Assert.isTrue(Promise.isPromise(next), 'catch() should return a promise');
 
             this.isFulfilled(next, function (val) {
-                Assert.areSame(value, val, 'promise fulfilled value should remain the same')
+                Assert.areSame(value, val, 'promise fulfilled value should remain the same');
             });
         },
 
@@ -463,7 +464,10 @@ YUI.add('promise-tests', function (Y) {
             function Subpromise() {
                 Subpromise.superclass.constructor.apply(this, arguments);
             }
-            Y.extend(Subpromise, Promise, null, {resolve: Promise.resolve});
+            Y.extend(Subpromise, Promise, null, {
+                _defer: Promise._defer,
+                resolve: Promise.resolve
+            });
 
             var promise = Subpromise.resolve('foo');
 
