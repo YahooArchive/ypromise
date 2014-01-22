@@ -28,7 +28,7 @@ in the `package.json` file of your project:
 ```
 {
 	"dependencies": {
-		"yui-promise": "0.0.3"
+		"yui-promise": "git@github.com:juandopazo/yui-promise"
 	}
 }
 ```

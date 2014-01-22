@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Promises Tests</title>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="log"></div>
+
+<script src="http://yui.yahooapis.com/3.14.1/build/yui/yui-min.js"></script>
+<script src="../../node_modules/requirejs/require.js"></script>
+<script>
+YUI().use('test', 'test-console', function(Y) {
+
+    var suite = new Y.Test.Suite({
+        name: 'Promise tests'
+    });
+
+    suite.add(new Y.Test.Case({
+        name: 'AMD loader',
+
+        'requirejs loads promise module successfully': function () {
+            var test = this;
+
+            require(['../../promise'], function (Promise) {
+                test.resume(function () {
+                    Y.Assert.isFunction(Promise, 'Promise was not loaded correctly');
+                    Y.Assert.isFunction(Promise.cast, 'Promise.cast was not loaded correctly');
+                    Y.Assert.isFunction(Promise.all, 'Promise was not loaded correctly');
+                });
+            });
+
+            test.wait();
+        }
+    }));
+
+    Y.Test.Runner.add(suite);
+
+    (new Y.Test.Console()).render('#log');
+    Y.Test.Runner.setName('Promise');
+    Y.Test.Runner.run();
+
+});
+</script>
+</body>
+</html>
