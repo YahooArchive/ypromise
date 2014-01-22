@@ -1,20 +1,22 @@
 {
     "name": "yui-promise",
-    "version": "0.0.4",
+    "version": "0.1.1",
     "homepage": "https://github.com/juandopazo/yui-promise",
     "authors": [
-        "Juan Ignacio Dopazo <dopazo.juan@gmail.com>"
+        "Juan Dopazo <dopazo.juan@gmail.com>"
     ],
-    "description": "Standalone version of YUI promises",
+    "description": "ES6 Promise polyfill",
     "main": "promise.js",
     "devDependencies": {
         "requirejs": "~2.1.9"
     },
     "keywords": [
         "promise",
+        "promises",
+        "polyfill",
+        "es6",
         "A+",
-        "aplus",
-        "YUI"
+        "yahoo"
     ],
     "license": "BSD",
     "ignore": [

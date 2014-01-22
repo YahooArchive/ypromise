@@ -1,22 +1,43 @@
 {
-	"name": "yui-promise",
-	"version": "0.1.1",
-	"description": "Standalone version of YUI promises",
-	"repository": {
+    "name": "es6-promise",
+    "version": "0.1.1",
+    "description": "ES6 Promise polyfill",
+    "author": "Juan Dopazo <dopazo.juan@gmail.com>",
+    "licenses": [
+        {
+            "type": "Yahoo BSD",
+            "url": "https://github.com/juandopazo/yui-promise/blob/master/LICENSE.md"
+        }
+    ],
+    "repository": {
         "type": "git",
-        "url": "http://github.com/juandopazo/yui-promise.git"
+        "url": "git@github.com:juandopazo/yui-promise.git"
     },
-	"main": "promise.js",
-	"devDependencies": {
-		"promises-aplus-tests": "2.0.3",
-		"grover": "0.1.17",
-		"requirejs": "~2.1.9"
-	},
-	"directories": {
-		"lib": "./lib"
-	},
-	"scripts": {
-		"test": "promises-aplus-tests tests/cli/adapter.js && grover --server --coverage tests/unit/*.html",
-		"lint": ""
-	}
+    "bugs": {
+        "url": "https://github.com/juandopazo/yui-promise/issues"
+    },
+    "keywords": [
+        "promise",
+        "promises",
+        "polyfill",
+        "es6",
+        "A+",
+        "yahoo"
+    ],
+    "main": "promise.js",
+    "devDependencies": {
+        "promises-aplus-tests": "2.0.3",
+        "grover": "0.1.17",
+        "requirejs": "~2.1.9"
+    },
+    "engines": {
+        "node": "*"
+    },
+    "directories": {
+        "lib": "./lib"
+    },
+    "scripts": {
+        "test": "promises-aplus-tests tests/cli/adapter.js && grover --server --coverage tests/unit/*.html",
+        "lint": ""
+    }
 }
