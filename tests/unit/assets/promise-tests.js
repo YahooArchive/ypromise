@@ -2,7 +2,6 @@ YUI.add('promise-tests', function (Y) {
 
     var Assert = Y.Assert,
         ArrayAssert = Y.Test.ArrayAssert,
-        isPromise = Promise.isPromise,
         wait = Y.fulfilledAfter,
         rejectedAfter = Y.rejectedAfter,
         dummy = {dummy: 'dummy'};
@@ -296,7 +295,7 @@ YUI.add('promise-tests', function (Y) {
             });
 
             Assert.isObject(next, 'catch() should return an object');
-            Assert.isTrue(Promise.isPromise(next), 'catch() should return a promise');
+            Assert.isInstanceOf(Promise, next, 'catch() should return a promise');
 
             this.isFulfilled(next, function (val) {
                 Assert.areSame(value, val, 'promise fulfilled value should remain the same');
@@ -321,60 +320,6 @@ YUI.add('promise-tests', function (Y) {
     }));
 
     suite.add(new Y.Test.Case({
-        name: 'Promise detection with Promise.isPromise',
-
-        _should: {
-            ignore: {
-                'detect object with getters that throw': !Object.create
-            }
-        },
-
-        'detecting YUI promises': function () {
-            Assert.isTrue(isPromise(new Promise(function () {})), 'a YUI promise should be identified as a promise');
-        },
-
-        'detecting pseudo promises': function () {
-            Assert.isTrue(isPromise({
-                then: function () {
-                    return 5;
-                }
-            }), 'a pseudo promise should be identified as a promise');
-        },
-
-        'failing for values and almost promises': function () {
-            // truthy values
-            Assert.isFalse(isPromise(5), 'numbers should not be identified as promises');
-            Assert.isFalse(isPromise('foo'), 'strings should not be identified as promises');
-            Assert.isFalse(isPromise(true), 'true booleans should not be identified as promises');
-            Assert.isFalse(isPromise({}), 'objects should not be identified as promises');
-
-            // false values
-            Assert.isFalse(isPromise(0), 'zero should not be identified as a promise');
-            Assert.isFalse(isPromise(''), 'empty strings should not be identified as promises');
-            Assert.isFalse(isPromise(false), 'false booleans should not be identified as promises');
-            Assert.isFalse(isPromise(null), 'null should not be identified as a promise');
-            Assert.isFalse(isPromise(undefined), 'undefined should not be identified as a promise');
-
-            // almost promises
-            Assert.isFalse(isPromise({
-                then: 5
-            }), 'almost promises should not be identified as promises');
-        },
-
-        'detect object with getters that throw': function () {
-            var nonPromise = Object.create(null, {
-                then: {
-                    get: function () {
-                        throw new Error('isPromise did not catch an exception thrown by the getter of the `then` property');
-                    }
-                }
-            });
-
-            Assert.isFalse(isPromise(nonPromise), 'an object with a `then` property that throws should not be identified as a promise');
-        }
-    }));
-
-    suite.add(new Y.Test.Case({
         name: 'Promise factories tests',
 
         'Promise constructor has the correct methods': function () {
@@ -387,7 +332,7 @@ YUI.add('promise-tests', function (Y) {
                 value = new Error('foo'),
                 promise = Promise.reject(value);
 
-            Assert.isTrue(isPromise(promise), 'Promise.reject() should return a promise');
+            Assert.isInstanceOf(Promise, promise, 'Promise.reject() should return a promise');
 
             this.isRejected(promise, function next(result) {
                 Assert.areSame(value, result, 'Promise.reject() should respect the passed value');
@@ -420,7 +365,10 @@ YUI.add('promise-tests', function (Y) {
             function Subpromise() {
                 Subpromise.superclass.constructor.apply(this, arguments);
             }
-            Y.extend(Subpromise, Promise, null, {reject: Promise.reject});
+            Y.extend(Subpromise, Promise, null, {
+                _defer: Promise._defer,
+                reject: Promise.reject
+            });
 
             var promise = Subpromise.reject('foo');
 
@@ -580,7 +528,7 @@ YUI.add('promise-tests', function (Y) {
             var promise = Promise.resolve(),
                 wrapped = Promise.cast(promise);
 
-            Assert.isTrue(Promise.isPromise(promise), 'Promise.cast should always return a promise');
+            Assert.isInstanceOf(Promise, promise, 'Promise.cast should always return a promise');
             Assert.areSame(promise, wrapped, 'Promise.cast should not modify a promise');
         },
 

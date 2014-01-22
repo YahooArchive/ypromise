@@ -11,28 +11,25 @@ http://yuilibrary.com/license/
     if (typeof define === 'function' && define.amd) {
         define(factory);
     }
-    if (!global.Promise) {
-        global.Promise = built;
-    }
+    global.Promise = built;
 }(this, function () {
 
     var STATUS    = '{private:status}',
         VALUE     = '{private:value}',
         WITNESS   = '{private:witness}',
         CALLBACKS = '{private:callbacks}',
-        ERRBACKS  = '{private:errbacks}';
-
-    function isArray(obj) {
-        return Object.prototype.toString.call(obj) === '[object Array]';
-    }
-
-    function assign(obj, props) {
-        for (var prop in props) {
-            if (props.hasOwnProperty(prop)) {
-                obj[prop] = props[prop];
+        ERRBACKS  = '{private:errbacks}',
+        isArray   = Array.isArray || function isArray(obj) {
+            return Object.prototype.toString.call(obj) === '[object Array]';
+        },
+        assign    = Object.assign || function assign(target, source) {
+            for (var prop in source) {
+                if (source.hasOwnProperty(prop)) {
+                    target[prop] = source[prop];
+                }
             }
-        }
-    }
+            return target;
+        };
 
     function noop() {}
 
@@ -427,9 +424,10 @@ http://yuilibrary.com/license/
     @static
     */
     Promise.cast = function (value) {
-        if (Promise.isPromise(value) && value.constructor === this) {
+        if (value && value.constructor === this) {
             return value;
         }
+
         var deferred = this._defer();
         deferred.resolve(value);
         return deferred.promise;
@@ -487,7 +485,8 @@ http://yuilibrary.com/license/
             results = [];
 
         if (!isArray(values)) {
-            return deferred.reject(new TypeError('Promise.all expects an array of values or promises'));
+            deferred.reject(new TypeError('Promise.all expects an array of values or promises'));
+            return deferred.promise;
         }
 
         remaining = length = values.length;
@@ -505,7 +504,8 @@ http://yuilibrary.com/license/
         }
 
         if (length < 1) {
-            return deferred.resolve(results);
+            deferred.resolve(results);
+            return deferred.promise;
         }
 
         for (; i < length; i++) {
@@ -530,7 +530,8 @@ http://yuilibrary.com/license/
             i = 0, count;
 
         if (!isArray(values)) {
-            return deferred.reject(new TypeError('Promise.race expects an array of values or promises'));
+            deferred.reject(new TypeError('Promise.race expects an array of values or promises'));
+            return deferred.promise;
         }
         
         // just go through the list and resolve and reject at the first change
