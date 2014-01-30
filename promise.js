@@ -15,8 +15,8 @@ http://yuilibrary.com/license/
 }(this, function () {
 
     var STATUS    = '{private:status}',
-        VALUE     = '{private:value}',
-        WITNESS   = '{private:witness}',
+        RESULT    = '{private:result}',
+        VALUE     = '{private:witness}',
         CALLBACKS = '{private:callbacks}',
         ERRBACKS  = '{private:errbacks}',
         isArray   = Array.isArray || function isArray(obj) {
@@ -46,12 +46,12 @@ http://yuilibrary.com/license/
         var status = promise[STATUS];
 
         if (status === 'pending' || status === 'accepted') {
-            promise[VALUE]  = value;
+            promise[RESULT]  = value;
             promise[STATUS] = 'fulfilled';
         }
 
         if (promise[STATUS] === 'fulfilled') {
-            notify(promise[CALLBACKS], promise[VALUE]);
+            notify(promise[CALLBACKS], promise[RESULT]);
 
             // Reset the callback list so that future calls to fulfill()
             // won't call the same callbacks again. Promises keep a list
@@ -80,13 +80,13 @@ http://yuilibrary.com/license/
         var status = promise[STATUS];
 
         if (status === 'pending' || status === 'accepted') {
-            promise[VALUE]  = reason;
+            promise[RESULT] = reason;
             promise[STATUS] = 'rejected';
             if (!promise[ERRBACKS].length) {Promise._log('Promise rejected but no error handlers were registered to it', 'warn');}
         }
 
         if (promise[STATUS] === 'rejected') {
-            notify(promise[ERRBACKS], promise[VALUE]);
+            notify(promise[ERRBACKS], promise[RESULT]);
 
             // See fulfill()
             promise[CALLBACKS] = null;
@@ -123,7 +123,7 @@ http://yuilibrary.com/license/
     function resolve(promise, value) {
         if (promise[STATUS] === 'pending') {
             promise[STATUS] = 'accepted';
-            promise[WITNESS] = value;
+            promise[VALUE]  = value;
 
             if ((promise[CALLBACKS] && promise[CALLBACKS].length) ||
                 (promise[ERRBACKS] && promise[ERRBACKS].length)) {
@@ -204,13 +204,13 @@ http://yuilibrary.com/license/
 
         switch (promise[STATUS]) {
             case 'accepted':
-                unwrap(promise, promise[WITNESS]);
+                unwrap(promise, promise[VALUE]);
                 break;
             case 'fulfilled':
-                fulfill(promise, promise[VALUE]);
+                fulfill(promise, promise[RESULT]);
                 break;
             case 'rejected':
-                reject(promise, promise[VALUE]);
+                reject(promise, promise[RESULT]);
                 break;
         }
     }
@@ -311,8 +311,8 @@ http://yuilibrary.com/license/
         var promise = this;
 
         promise[STATUS]    = 'pending';
+        promise[RESULT]    = null;
         promise[VALUE]     = null;
-        promise[WITNESS]   = null;
         promise[CALLBACKS] = [];
         promise[ERRBACKS]  = [];
 
@@ -382,8 +382,8 @@ http://yuilibrary.com/license/
         noop.prototype = this.prototype;
         var promise = new noop();
         promise[STATUS]    = 'pending';
+        promise[RESULT]    = null;
         promise[VALUE]     = null;
-        promise[WITNESS]   = null;
         promise[CALLBACKS] = [];
         promise[ERRBACKS]  = [];
         return {
@@ -447,7 +447,7 @@ http://yuilibrary.com/license/
 
        // Do not go through resolver.reject() because an immediately rejected promise
        // always has no callbacks which would trigger an unnecessary warnihg
-       promise[VALUE] = reason;
+       promise[RESULT] = reason;
        promise[STATUS] = 'rejected';
 
        return promise;
