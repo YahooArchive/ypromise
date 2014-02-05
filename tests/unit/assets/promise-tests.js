@@ -424,6 +424,34 @@ YUI.add('promise-tests', function (Y) {
             this.isFulfilled(promise, function (value) {
                 Assert.areSame('foo', value, 'subpromise should have the correct fulfilled value');
             });
+        },
+
+        'Promise.resolve() should not modify promises': function () {
+            var promise = Promise.resolve(),
+                wrapped = Promise.resolve(promise);
+
+            Assert.isInstanceOf(Promise, promise, 'Promise.resolve should always return a promise');
+            Assert.areSame(promise, wrapped, 'Promise.resolve should not modify a promise');
+        },
+
+        'Promise.resolve() should wrap values in a promise': function () {
+            // truthy values
+            Assert.isInstanceOf(Promise, Promise.resolve(5), 'numbers should be wrapped in a promise');
+            Assert.isInstanceOf(Promise, Promise.resolve('foo'), 'strings should be wrapped in a promise');
+            Assert.isInstanceOf(Promise, Promise.resolve(true), 'booleans should be wrapped in a promise');
+            Assert.isInstanceOf(Promise, Promise.resolve(function () {}), 'functions should be wrapped in a promise');
+            Assert.isInstanceOf(Promise, Promise.resolve({}), 'objects should be wrapped in a promise');
+
+            // falsy values
+            Assert.isInstanceOf(Promise, Promise.resolve(0), 'zero should be wrapped in a promise');
+            Assert.isInstanceOf(Promise, Promise.resolve(''), 'empty strings should be wrapped in a promise');
+            Assert.isInstanceOf(Promise, Promise.resolve(false), 'false should be wrapped in a promise');
+            Assert.isInstanceOf(Promise, Promise.resolve(null), 'null should be wrapped in a promise');
+            Assert.isInstanceOf(Promise, Promise.resolve(undefined), 'undefined should be wrapped in a promise');
+            Assert.isInstanceOf(Promise, Promise.resolve(), 'undefined (empty parameters) should be wrapped in a promise');
+
+            // almost promises
+            Assert.isInstanceOf(Promise, Promise.resolve({then: 5}), 'promise-like objects should be wrapped in a promise');
         }
     }));
 
@@ -520,39 +548,6 @@ YUI.add('promise-tests', function (Y) {
             });
         }
     }));
-
-    suite.add(new Y.Test.Case({
-        name: 'Promise.cast() tests',
-
-        'a promise should not be modified': function () {
-            var promise = Promise.resolve(),
-                wrapped = Promise.cast(promise);
-
-            Assert.isInstanceOf(Promise, promise, 'Promise.cast should always return a promise');
-            Assert.areSame(promise, wrapped, 'Promise.cast should not modify a promise');
-        },
-
-        'values should be wrapped in a promise': function () {
-            // truthy values
-            Assert.isInstanceOf(Promise, Promise.cast(5), 'numbers should be wrapped in a promise');
-            Assert.isInstanceOf(Promise, Promise.cast('foo'), 'strings should be wrapped in a promise');
-            Assert.isInstanceOf(Promise, Promise.cast(true), 'booleans should be wrapped in a promise');
-            Assert.isInstanceOf(Promise, Promise.cast(function () {}), 'functions should be wrapped in a promise');
-            Assert.isInstanceOf(Promise, Promise.cast({}), 'objects should be wrapped in a promise');
-
-            // falsy values
-            Assert.isInstanceOf(Promise, Promise.cast(0), 'zero should be wrapped in a promise');
-            Assert.isInstanceOf(Promise, Promise.cast(''), 'empty strings should be wrapped in a promise');
-            Assert.isInstanceOf(Promise, Promise.cast(false), 'false should be wrapped in a promise');
-            Assert.isInstanceOf(Promise, Promise.cast(null), 'null should be wrapped in a promise');
-            Assert.isInstanceOf(Promise, Promise.cast(undefined), 'undefined should be wrapped in a promise');
-            Assert.isInstanceOf(Promise, Promise.cast(), 'undefined (empty parameters) should be wrapped in a promise');
-
-            // almost promises
-            Assert.isInstanceOf(Promise, Promise.cast({then: 5}), 'promise-like objects should be wrapped in a promise');
-        }
-    }));
-
 
     Y.Test.Runner.add(suite);
 

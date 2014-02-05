@@ -410,20 +410,20 @@ http://yuilibrary.com/license/
     Promise._log = typeof console === 'undefined' ? function () {} : function (msg, type) {console[type || 'info'](msg);};
 
     /*
-    Ensures that a certain value is a promise. If it is not a promise, it wraps it
-    in one.
+    Ensures that a certain value is a promise. If it is not a promise, it wraps
+    the value in one.
 
     This method can be copied or inherited in subclasses. In that case it will
     check that the value passed to it is an instance of the correct class.
-    This means that `PromiseSubclass.cast()` will always return instances of
-    `PromiseSublcass`.
+    This means that `PromiseSubclass.resolve()` will always return instances of
+    `PromiseSubclass`.
 
-    @method cast
+    @method resolve
     @param {Any} Any object that may or may not be a promise
     @return {Promise}
     @static
     */
-    Promise.cast = function (value) {
+    Promise.resolve = function (value) {
         if (value && value.constructor === this) {
             return value;
         }
@@ -451,20 +451,6 @@ http://yuilibrary.com/license/
        promise[STATUS] = 'rejected';
 
        return promise;
-    };
-
-    /*
-    A shorthand for creating a resolved promise.
-
-    @method resolve
-    @param {Any} value The value or promise that resolves the returned promise
-    @return {Promise} A resolved promise
-    @static
-    */
-    Promise.resolve = function (value) {
-        var deferred = this._defer();
-        deferred.resolve(value);
-        return deferred.promise;
     };
 
     /*
@@ -509,7 +495,7 @@ http://yuilibrary.com/license/
         }
 
         for (; i < length; i++) {
-            this.cast(values[i]).then(oneDone(i), deferred.reject);
+            this.resolve(values[i]).then(oneDone(i), deferred.reject);
         }
 
         return deferred.promise;
@@ -538,7 +524,7 @@ http://yuilibrary.com/license/
         // This abuses the fact that calling resolve/reject multiple times
         // doesn't change the state of the returned promise
         for (count = values.length; i < count; i++) {
-            this.cast(values[i]).then(deferred.resolve, deferred.reject);
+            this.resolve(values[i]).then(deferred.resolve, deferred.reject);
         }
 
         return deferred.promise;

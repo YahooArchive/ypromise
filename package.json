@@ -1,6 +1,6 @@
 {
-    "name": "es6-promise",
-    "version": "0.1.1",
+    "name": "es6-promises",
+    "version": "0.2.1",
     "description": "ES6 Promise polyfill",
     "author": "Juan Dopazo <dopazo.juan@gmail.com>",
     "licenses": [
