@@ -11,9 +11,7 @@ http://yuilibrary.com/license/
     if (typeof define === 'function' && define.amd) {
         define(factory);
     }
-    if (!global.Promise) {
-        global.Promise = built;
-    }
+    global.Promise = built;
 }(this, function () {
 
     function isArray(obj) {
@@ -301,7 +299,7 @@ http://yuilibrary.com/license/
             }
 
             for (; i < length; i++) {
-                Promise.cast(values[i]).then(oneDone(i), reject);
+                Promise.resolve(values[i]).then(oneDone(i), reject);
             }
         });
     };
@@ -328,7 +326,7 @@ http://yuilibrary.com/license/
             // This abuses the fact that calling resolve/reject multiple times
             // doesn't change the state of the returned promise
             for (var i = 0, count = values.length; i < count; i++) {
-                Promise.cast(values[i]).then(resolve, reject);
+                Promise.resolve(values[i]).then(resolve, reject);
             }
         });
     };
