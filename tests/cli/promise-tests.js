@@ -1,3 +1,8 @@
+var Promise = require('../../promise.js');
+var expect = require('expect.js');
+var adapter = require('./adapter.js');
+var promisesAplusTests = require('promises-aplus-tests');
+
 var dummy = {dummy: 'dummy'};
 
 function isFulfilled(promise, done, callback) {
@@ -591,4 +596,8 @@ describe('Promise combinators', function () {
             });
         });
     });
+});
+
+describe("Promises/A+ Tests", function () {
+    require("promises-aplus-tests").mocha(adapter);
 });
