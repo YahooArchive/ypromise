@@ -28,7 +28,10 @@
     "devDependencies": {
         "promises-aplus-tests": "2.0.3",
         "grover": "0.1.17",
-        "requirejs": "~2.1.9"
+        "requirejs": "~2.1.9",
+        "mocha": "~1.7.1",
+        "expect.js": "~0.2.0",
+        "istanbul": "~0.2.4"
     },
     "engines": {
         "node": "*"
@@ -37,7 +40,7 @@
         "lib": "./lib"
     },
     "scripts": {
-        "test": "promises-aplus-tests tests/cli/adapter.js && grover --server --coverage tests/unit/*.html",
+        "test": "istanbul cover node_modules/mocha/bin/_mocha -- tests/unit/assets/promise-tests.js -R spec",
         "lint": ""
     }
 }
