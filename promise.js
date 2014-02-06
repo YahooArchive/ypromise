@@ -5,9 +5,11 @@ http://yuilibrary.com/license/
 */
 (function (global, factory) {
     var built = factory();
+    /* istanbul ignore else */
     if (typeof module === 'object' && module) {
         module.exports = built;
     }
+    /* istanbul ignore next */
     if (typeof define === 'function' && define.amd) {
         define(factory);
     }
@@ -20,6 +22,7 @@ http://yuilibrary.com/license/
 
     function assign(obj, props) {
         for (var prop in props) {
+            /* istanbul ignore else */
             if (props.hasOwnProperty(prop)) {
                 obj[prop] = props[prop];
             }
@@ -185,31 +188,8 @@ http://yuilibrary.com/license/
     @static
     @private
     **/
+    /* istanbul ignore next */
     Promise._log = function (msg, type) {console[type || 'info'](msg);};
-
-    /**
-    Checks if an object or value is a promise. This is cross-implementation
-    compatible, so promises returned from other libraries or native components
-    that are compatible with the Promises A+ spec should be recognized by this
-    method.
-
-    @method isPromise
-    @param {Any} obj The object to test
-    @return {Boolean} Whether the object is a promise or not
-    @static
-    **/
-    Promise.isPromise = function (obj) {
-        var then;
-        // We test promises by structure to be able to identify other
-        // implementations' promises. This is important for cross compatibility and
-        // In particular Y.when which should recognize any kind of promise
-        // Use try...catch when retrieving obj.then. Return false if it throws
-        // See Promises/A+ 1.1
-        try {
-            then = obj.then;
-        } catch (_) {}
-        return typeof then === 'function';
-    };
 
     /*
     Ensures that a certain value is a promise. If it is not a promise, it wraps it
@@ -340,6 +320,7 @@ http://yuilibrary.com/license/
     @param {Function} callback The function to call asynchronously
     @static
     **/
+    /* istanbul ignore next */
     Promise.async = typeof setImmediate !== 'undefined' ?
                         function (fn) {setImmediate(fn);} :
                     typeof process !== 'undefined' && process.nextTick ?
@@ -549,28 +530,6 @@ http://yuilibrary.com/license/
                     self.reject(e);
                 }
             }
-        },
-
-        /**
-        Schedule execution of a callback to either or both of "resolve" and
-        "reject" resolutions for the Resolver.  The callbacks
-        are wrapped in a new Resolver and that Resolver's corresponding promise
-        is returned.  This allows operation chaining ala
-        `functionA().then(functionB).then(functionC)` where `functionA` returns
-        a promise, and `functionB` and `functionC` _may_ return promises.
-
-        @method then
-        @param {Function} [callback] function to execute if the Resolver
-                    resolves successfully
-        @param {Function} [errback] function to execute if the Resolver
-                    resolves unsuccessfully
-        @return {Promise} The promise of a new Resolver wrapping the resolution
-                    of either "resolve" or "reject" callback
-        @deprecated
-        **/
-        then: function (callback, errback) {
-            Promise._log('resolver.then() is deprecated', 'warn');
-            return this.promise.then(callback, errback);
         },
 
         /**
