@@ -219,21 +219,23 @@ http://yuilibrary.com/license/
 
     This method can be copied or inherited in subclasses. In that case it will
     check that the value passed to it is an instance of the correct class.
-    This means that `PromiseSubclass.cast()` will always return instances of
-    `PromiseSublcass`.
+    This means that `PromiseSubclass.resolve()` will always return instances of
+    `PromiseSubclass`.
 
-    @method cast
+    @method resolve
     @param {Any} Any object that may or may not be a promise
     @return {Promise}
     @static
     */
-    Promise.cast = function (value) {
-        return Promise.isPromise(value) && value.constructor === this ? value :
-            /*jshint newcap: false */
-            new this(function (resolve) {
-            /*jshint newcap: true */
-                resolve(value);
-            });
+    Promise.resolve = function (value) {
+        if (value && value.constructor === this) {
+            return value;
+        }
+        /*jshint newcap: false */
+        return new this(function (resolve) {
+        /*jshint newcap: true */
+            resolve(value);
+        });
     };
 
     /*
@@ -256,22 +258,6 @@ http://yuilibrary.com/license/
        promise._resolver._status = 'rejected';
 
        return promise;
-    };
-
-    /*
-    A shorthand for creating a resolved promise.
-
-    @method resolve
-    @param {Any} value The value or promise that resolves the returned promise
-    @return {Promise} A resolved promise
-    @static
-    */
-    Promise.resolve = function (value) {
-        /*jshint newcap: false */
-        return new this(function (resolve) {
-        /*jshint newcap: true */
-            resolve(value);
-        });
     };
 
     /*
