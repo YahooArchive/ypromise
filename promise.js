@@ -184,12 +184,11 @@ http://yuilibrary.com/license/
 
     @method _log
     @param {String} msg Message to log
-    @param {String} [type='info'] Log level. One of 'error', 'warn', 'debug', 'info'.
+    @param {String} type Log level. One of 'error', 'warn', 'debug', 'info'.
     @static
     @private
     **/
-    /* istanbul ignore next */
-    Promise._log = function (msg, type) {console[type || 'info'](msg);};
+    Promise._log = function (msg, type) {console[type](msg);};
 
     /*
     Ensures that a certain value is a promise. If it is not a promise, it wraps it
