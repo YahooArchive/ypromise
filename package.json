@@ -1,6 +1,6 @@
 {
-    "name": "es6-promise",
-    "version": "0.1.1",
+    "name": "yui-promise",
+    "version": "0.2.0",
     "description": "ES6 Promise polyfill",
     "author": "Juan Dopazo <dopazo.juan@gmail.com>",
     "licenses": [
