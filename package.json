@@ -40,7 +40,7 @@
         "lib": "./lib"
     },
     "scripts": {
-        "test": "istanbul cover node_modules/mocha/bin/_mocha -- tests/cli/promise-tests.js -R spec",
+        "test": "istanbul cover node_modules/mocha/bin/_mocha -- tests/cli/promise-tests.js -R dot",
         "lint": ""
     }
 }

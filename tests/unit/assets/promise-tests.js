@@ -68,6 +68,10 @@ extend.f = function () {};
 
 describe('Basic promise behavior', function () {
     describe('Promise constructor', function () {
+        it('should return a promise when used as a function', function () {
+            expect(Promise(function () {})).to.be.a(Promise);
+        });
+
         specify('fulfilling more than once should not change the promise value', function (done) {
             var promise = new Promise(function (resolve) {
                 resolve(true);
