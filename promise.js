@@ -21,11 +21,12 @@ http://yuilibrary.com/license/
         VALUE     = '{private:witness}',
         CALLBACKS = '{private:callbacks}',
         ERRBACKS  = '{private:errbacks}',
-        isArray   = Array.isArray || function isArray(obj) {
+        isArray   = Array.isArray || /* istanbul ignore next */ function isArray(obj) {
             return Object.prototype.toString.call(obj) === '[object Array]';
         },
         assign    = Object.assign || function assign(target, source) {
             for (var prop in source) {
+                /* istanbul ignore else */
                 if (source.hasOwnProperty(prop)) {
                     target[prop] = source[prop];
                 }
