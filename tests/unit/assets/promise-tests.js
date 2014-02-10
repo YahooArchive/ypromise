@@ -139,7 +139,6 @@ describe('Basic promise behavior', function () {
                 PromiseSubclass.superclass.constructor.apply(this, arguments);
             }
             extend(PromiseSubclass, Promise);
-            PromiseSubclass._defer = Promise._defer;
 
             var promise = new PromiseSubclass(function () {}).then();
 

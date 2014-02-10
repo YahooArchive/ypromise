@@ -36,6 +36,10 @@ http://yuilibrary.com/license/
 
     function noop() {}
 
+    function getDeferred(constructor) {
+        return (constructor._defer || Promise._defer).call(constructor);
+    }
+
     /**
     Resolves the promise, signaling successful completion of the
     represented operation. All "onFulfilled" subscriptions are executed and passed
@@ -349,9 +353,9 @@ http://yuilibrary.com/license/
                     "reject" callback
         **/
         then: function (callback, errback) {
-            // using this._defer() allows for subclassed promises to be
+            // using getDeferred() allows for subclassed promises to be
             // returned instead of plain ones
-            var deferred = this.constructor._defer();
+            var deferred = getDeferred(this.constructor);
 
             addCallbacks(this,
                 typeof callback === 'function' ?
@@ -406,7 +410,7 @@ http://yuilibrary.com/license/
 
     @method _log
     @param {String} msg Message to log
-    @param {String} type Log level. One of 'error', 'warn', 'debug', 'info'.
+    @param {String} type Log level. One of 'error', 'warn', 'info'.
     @static
     @private
     **/
@@ -431,7 +435,7 @@ http://yuilibrary.com/license/
             return value;
         }
 
-        var deferred = this._defer();
+        var deferred = getDeferred(this);
         deferred.resolve(value);
         return deferred.promise;
     };
@@ -446,7 +450,7 @@ http://yuilibrary.com/license/
     @static
     */
     Promise.reject = function (reason) {
-        var promise = this._defer().promise;
+        var promise = getDeferred(this).promise;
 
        // Do not go through resolver.reject() because an immediately rejected promise
        // always has no callbacks which would trigger an unnecessary warnihg
@@ -468,7 +472,7 @@ http://yuilibrary.com/license/
     @static
     */
     Promise.all = function (values) {
-        var deferred = this._defer(),
+        var deferred = getDeferred(this),
             remaining, length,
             i = 0,
             results = [];
@@ -515,7 +519,7 @@ http://yuilibrary.com/license/
     @static
     */
     Promise.race = function (values) {
-        var deferred = this._defer(),
+        var deferred = getDeferred(this),
             i = 0, count;
 
         if (!isArray(values)) {
