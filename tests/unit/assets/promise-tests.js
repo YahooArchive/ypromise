@@ -74,7 +74,21 @@ extend.f = function () {};
 describe('Basic promise behavior', function () {
     describe('Promise constructor', function () {
         it('should return a promise when used as a function', function () {
-            expect(Promise).withArgs(function () {}).to.throwError(TypeError);
+            expect(function () { return Promise(function () {}); }).to.throwError(TypeError);
+        });
+
+        it('should throw an error when it is called without a function as a parameter', function () {
+            function construct(withArg) {
+                return function () {
+                    return new Promise(withArg);
+                };
+            }
+
+            expect(construct()).to.throwError(TypeError);
+            expect(construct({})).to.throwError(TypeError);
+            expect(construct(5)).to.throwError(TypeError);
+            expect(construct('hello')).to.throwError(TypeError);
+            expect(construct(true)).to.throwError(TypeError);
         });
 
         specify('fulfilling more than once should not change the promise value', function (done) {

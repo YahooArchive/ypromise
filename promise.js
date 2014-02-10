@@ -323,6 +323,10 @@ http://yuilibrary.com/license/
         promise[CALLBACKS] = [];
         promise[ERRBACKS]  = [];
 
+        if (typeof fn !== 'function') {
+            throw new TypeError('Promise constructor must be called with a function');
+        }
+
         try {
             fn(function (value) {
                 resolve(promise, value);
