@@ -5,9 +5,11 @@ http://yuilibrary.com/license/
 */
 (function (global, factory) {
     var built = factory();
+    /* istanbul ignore else */
     if (typeof module === 'object' && module) {
         module.exports = built;
     }
+    /* istanbul ignore next */
     if (typeof define === 'function' && define.amd) {
         define(factory);
     }
@@ -403,11 +405,11 @@ http://yuilibrary.com/license/
 
     @method _log
     @param {String} msg Message to log
-    @param {String} [type='info'] Log level. One of 'error', 'warn', 'debug', 'info'.
+    @param {String} type Log level. One of 'error', 'warn', 'debug', 'info'.
     @static
     @private
     **/
-    Promise._log = typeof console === 'undefined' ? function () {} : function (msg, type) {console[type || 'info'](msg);};
+    Promise._log = function (msg, type) {console[type](msg);};
 
     /*
     Ensures that a certain value is a promise. If it is not a promise, it wraps
@@ -539,6 +541,7 @@ http://yuilibrary.com/license/
     @param {Function} callback The function to call asynchronously
     @static
     **/
+    /* istanbul ignore next */
     Promise.async = typeof setImmediate !== 'undefined' ?
                         function (fn) {setImmediate(fn);} :
                     typeof process !== 'undefined' && process.nextTick ?

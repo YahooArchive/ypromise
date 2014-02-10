@@ -1,5 +1,5 @@
-YUI Promises
-============
+ES6 Promise Polyfill
+====================
 
 [![Build Status](https://travis-ci.org/juandopazo/yui-promise.png)](https://travis-ci.org/juandopazo/yui-promise)
 
@@ -10,7 +10,7 @@ Promises allow you to interact with a value that may or may not be available yet
 Getting Started
 ---------------
 
-YUI promises can be loaded as:
+This polyfill can be loaded as:
 
  * A script that acts as a polyfill for native promises and adds a global
    `Promise` constructor if the native version is not available
@@ -22,7 +22,7 @@ YUI promises can be loaded as:
 
 #### Installation
 
-To use YUI promises in Node.js, add the `yui-promise` module to your dependencies
+To use this module in Node.js, add the `yui-promise` module to your dependencies
 in the `package.json` file of your project:
 
 ```
@@ -86,13 +86,10 @@ Sugar for `promise.then(undefined, onRejected)`.
 
 ### Static methods
 
-#### Promise.cast(value)
-Always returns a promise. If `value` is a promise and its constructor is `Promise`
-`cast` will return it without modifying it. Otherwise, `cast` will return a new
-promise that resolves to `value`.
-
 #### Promise.resolve(value)
-Returns a promise resolved with `value`. Sugar for `new Promise(function (resolve) { resolve(value); })`.
+Always returns a promise. If `value` is a promise and its constructor is `Promise`
+`resolve` will return it without modifying it. Otherwise, `resolve` will return
+a new promise that resolves to `value`.
 
 #### Promise.reject(reason)
 Returns a promise rejected with `reason`. Sugar for `new Promise(function (resolve, reject) { reject(value); })`.
