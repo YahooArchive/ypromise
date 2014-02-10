@@ -89,7 +89,7 @@ http://yuilibrary.com/license/
         if (status === 'pending' || status === 'accepted') {
             promise[RESULT] = reason;
             promise[STATUS] = 'rejected';
-            if (!promise[ERRBACKS].length) {Promise._log('Promise rejected but no error handlers were registered to it', 'warn');}
+            if (!promise[ERRBACKS].length) {Promise._log('Promise rejected but no error handlers were registered to it', 'info');}
         }
 
         if (promise[STATUS] === 'rejected') {
