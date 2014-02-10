@@ -74,15 +74,7 @@ extend.f = function () {};
 describe('Basic promise behavior', function () {
     describe('Promise constructor', function () {
         it('should return a promise when used as a function', function () {
-            var failed = false;
-
-            try {
-                Promise(function () {});
-            } catch (e) {
-                failed = true;
-                expect(e).to.be.a(TypeError);
-            }
-            expect(failed).to.be(true);
+            expect(Promise).withArgs(function () {}).to.throwError(TypeError);
         });
 
         specify('fulfilling more than once should not change the promise value', function (done) {
