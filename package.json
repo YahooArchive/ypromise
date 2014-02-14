@@ -30,6 +30,7 @@
         "requirejs": "~2.1.9",
         "mocha": "~1.7.1",
         "expect.js": "~0.2.0",
+        "sinon": "~1.8.2",
         "istanbul": "~0.2.4",
         "xunit-file": "*"
     },
