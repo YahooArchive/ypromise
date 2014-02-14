@@ -1,9 +1,7 @@
 ES6 Promise Polyfill
 ====================
 
-[![Build Status](https://travis-ci.org/juandopazo/yui-promise.png)](https://travis-ci.org/juandopazo/yui-promise)
-
-**Notice**: this module is under development.
+[![Build Status](https://travis-ci.org/yahoo/ypromise.png)](https://travis-ci.org/yahoo/ypromise)
 
 Promises allow you to interact with a value that may or may not be available yet.
 
@@ -22,13 +20,13 @@ This polyfill can be loaded as:
 
 #### Installation
 
-To use this module in Node.js, add the `yui-promise` module to your dependencies
+To use this module in Node.js, add the `ypromise` module to your dependencies
 in the `package.json` file of your project:
 
 ```
 {
 	"dependencies": {
-		"yui-promise": "git@github.com:juandopazo/yui-promise"
+		"ypromise": "git@github.com:yahoo/ypromise"
 	}
 }
 ```
@@ -44,7 +42,7 @@ $ npm install
 The `yui-promise` module exports the Promise constructor:
 
 ```js
-var Promise = require('yui-promise');
+var Promise = require('ypromise');
 
 function asyncFunction() {
 	return new Promise(function (resolve, reject) {
@@ -110,4 +108,4 @@ License
 This software is free to use under the Yahoo! Inc. BSD license.
 See the [LICENSE file][] for license text and copyright information.
 
-[LICENSE file]: https://github.com/juandopazo/yui-promise/blob/master/LICENSE.md
+[LICENSE file]: https://github.com/yahoo/ypromise/blob/master/LICENSE.md
