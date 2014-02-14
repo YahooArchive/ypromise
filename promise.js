@@ -184,7 +184,7 @@ http://yuilibrary.com/license/
 
     @method _log
     @param {String} msg Message to log
-    @param {String} type Log level. One of 'error', 'warn', 'debug', 'info'.
+    @param {String} type Log level. One of 'error', 'warn', 'info'.
     @static
     @private
     **/
