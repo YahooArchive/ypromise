@@ -1,6 +1,6 @@
 {
     "name": "yui-promise",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "ES6 Promise polyfill",
     "author": "Juan Dopazo <dopazo.juan@gmail.com>",
     "licenses": [
@@ -27,12 +27,12 @@
     "main": "promise.js",
     "devDependencies": {
         "promises-aplus-tests": "2.0.3",
-        "grover": "0.1.17",
         "requirejs": "~2.1.9",
         "mocha": "~1.7.1",
         "expect.js": "~0.2.0",
         "sinon": "~1.8.2",
-        "istanbul": "~0.2.4"
+        "istanbul": "~0.2.4",
+        "xunit-file": "*"
     },
     "engines": {
         "node": "*"
