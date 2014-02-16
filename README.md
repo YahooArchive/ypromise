@@ -39,7 +39,7 @@ $ npm install
 
 #### Usage
 
-The `yui-promise` module exports the Promise constructor:
+The `ypromise` module exports the Promise constructor:
 
 ```js
 var Promise = require('ypromise');
