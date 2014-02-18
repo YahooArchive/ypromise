@@ -95,7 +95,7 @@ Returns a promise rejected with `reason`. Sugar for `new Promise(function (resol
 #### Promise.all(list)
 Returns a promise that fulfills when every item in the array fulfills, and
 rejects if (and when) any item rejects. Each array item is passed to
-`Promise.cast`, so the array can be a mixture of promise-like objects and other
+`Promise.resolve`, so the array can be a mixture of promise-like objects and other
 objects. The fulfillment value is an array (in order) of fulfillment values. The
 rejection value is the first rejection value.
 
