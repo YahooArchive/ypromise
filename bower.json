@@ -1,7 +1,7 @@
 {
-    "name": "yui-promise",
+    "name": "ypromise",
     "version": "0.1.1",
-    "homepage": "https://github.com/juandopazo/yui-promise",
+    "homepage": "https://github.com/yahoo/ypromise",
     "authors": [
         "Juan Dopazo <dopazo.juan@gmail.com>"
     ],
