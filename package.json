@@ -6,15 +6,15 @@
     "licenses": [
         {
             "type": "Yahoo BSD",
-            "url": "https://github.com/juandopazo/yui-promise/blob/master/LICENSE.md"
+            "url": "https://github.com/yahoo/ypromise/blob/master/LICENSE.md"
         }
     ],
     "repository": {
         "type": "git",
-        "url": "git@github.com:juandopazo/yui-promise.git"
+        "url": "git@github.com:yahoo/ypromise.git"
     },
     "bugs": {
-        "url": "https://github.com/juandopazo/yui-promise/issues"
+        "url": "https://github.com/yahoo/ypromise/issues"
     },
     "keywords": [
         "promise",
