@@ -101,7 +101,7 @@ rejection value is the first rejection value.
 
 #### Promise.race(list)
 Returns a Promise that fulfills when any item fulfills, and rejects if any item
-rejects. Esentially, the first promise to be settled wins the race.
+rejects. Essentially, the first promise to be settled wins the race.
 
 License
 -------
