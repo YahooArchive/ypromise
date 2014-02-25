@@ -434,7 +434,7 @@ http://yuilibrary.com/license/
             if (status === 'pending' || status === 'accepted') {
                 this._result = reason;
                 this._status = 'rejected';
-                if (!this._errbacks.length) {Promise._log('Promise rejected but no error handlers were registered to it', 'warn');}
+                if (!this._errbacks.length) {Promise._log('Promise rejected but no error handlers were registered to it', 'debug');}
             }
 
             if (this._status === 'rejected') {
