@@ -3,6 +3,10 @@ Copyright 2013 Yahoo! Inc. All rights reserved.
 Licensed under the BSD License.
 http://yuilibrary.com/license/
 */
+
+/*jslint expr: true */
+/*global define */
+
 (function (global, factory) {
     var built = factory();
     /* istanbul ignore else */
@@ -13,8 +17,9 @@ http://yuilibrary.com/license/
     if (typeof define === 'function' && define.amd) {
         define(factory);
     }
-    global.Promise = built;
-}(this, function () {
+    global.PromisePolyfill = built;
+    global.Promise || (global.Promise = built);
+}(typeof global !== 'undefined' ? global : this, function () {
 
     function isArray(obj) {
         return Object.prototype.toString.call(obj) === '[object Array]';
