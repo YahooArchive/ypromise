@@ -15,7 +15,7 @@ http://yuilibrary.com/license/
     }
     /* istanbul ignore next */
     if (typeof define === 'function' && define.amd) {
-        define(built);
+        define(factory);
     }
     global.PromisePolyfill = built;
     global.Promise || (global.Promise = built);
