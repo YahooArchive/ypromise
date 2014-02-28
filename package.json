@@ -41,7 +41,7 @@
         "lib": "./lib"
     },
     "scripts": {
-        "test": "istanbul cover node_modules/mocha/bin/_mocha -- tests/cli/promise-tests.js -R dot",
+        "test": "mocha tests/cli/amd-runner.js --globals Promise -R dot && istanbul cover node_modules/mocha/bin/_mocha -- tests/cli/promise-tests.js -R dot",
         "lint": ""
     }
 }

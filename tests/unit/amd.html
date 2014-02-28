@@ -9,8 +9,16 @@
   <div id="mocha"></div>
   <script src="../../node_modules/expect.js/expect.js"></script>
   <script src="../../node_modules/mocha/mocha.js"></script>
-  <script>mocha.setup('bdd')</script>
+  <script>mocha.setup('bdd');</script>
   <script src="../../node_modules/requirejs/require.js"></script>
+  <script>
+    window.requirejs = require;
+    requirejs.config({
+      paths: {
+        ypromise: '../../promise'
+      }
+    });
+  </script>
   <script src="assets/amd-tests.js"></script>
   <script>
     mocha.checkLeaks();
