@@ -19,7 +19,7 @@ http://yuilibrary.com/license/
     }
     global.PromisePolyfill = built;
     global.Promise || (global.Promise = built);
-}(typeof global !== 'undefined' ? global : this, function () {
+}(typeof global !== 'undefined' ? global : /* istanbul ignore next */ this, function () {
 
     function isArray(obj) {
         return Object.prototype.toString.call(obj) === '[object Array]';
