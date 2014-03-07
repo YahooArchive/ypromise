@@ -8,10 +8,13 @@ http://yuilibrary.com/license/
 /*global define */
 
 (function (global, factory) {
-    var built = factory();
+    var built;
     /* istanbul ignore else */
     if (typeof module === 'object' && module) {
+        built = factory(require('asap'));
         module.exports = built;
+    } else {
+        built = factory();
     }
     /* istanbul ignore next */
     if (typeof define === 'function' && define.amd) {
@@ -19,7 +22,7 @@ http://yuilibrary.com/license/
     }
     global.PromisePolyfill = built;
     global.Promise || (global.Promise = built);
-}(typeof global !== 'undefined' ? global : /* istanbul ignore next */ this, function () {
+}(typeof global !== 'undefined' ? global : /* istanbul ignore next */ this, function (asap) {
 
     function isArray(obj) {
         return Object.prototype.toString.call(obj) === '[object Array]';
@@ -325,11 +328,11 @@ http://yuilibrary.com/license/
     @static
     **/
     /* istanbul ignore next */
-    Promise.async = typeof setImmediate !== 'undefined' ?
+    Promise.async = asap || (typeof setImmediate !== 'undefined' ?
                         function (fn) {setImmediate(fn);} :
                     typeof process !== 'undefined' && process.nextTick ?
                         process.nextTick :
-                    function (fn) {setTimeout(fn, 0);};
+                    function (fn) {setTimeout(fn, 0);});
 
     /**
     Represents an asynchronous operation. Provides a
