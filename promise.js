@@ -9,7 +9,6 @@ http://yuilibrary.com/license/
 
 (function (global, factory) {
     var built;
-    /* istanbul ignore else */
     if (typeof module === 'object' && module) {
         built = factory(require('asap'));
         module.exports = built;
@@ -18,7 +17,7 @@ http://yuilibrary.com/license/
     }
     /* istanbul ignore next */
     if (typeof define === 'function' && define.amd) {
-        define(factory);
+        define(function () { return built; });
     }
     global.PromisePolyfill = built;
     global.Promise || (global.Promise = built);
