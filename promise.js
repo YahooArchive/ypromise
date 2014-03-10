@@ -235,7 +235,7 @@ http://yuilibrary.com/license/
        /*jshint newcap: true */
 
        // Do not go through resolver.reject() because an immediately rejected promise
-       // always has no callbacks which would trigger an unnecessary warnihg
+       // always has no callbacks which would trigger an unnecessary warning
        promise._resolver._result = reason;
        promise._resolver._status = 'rejected';
 
@@ -431,7 +431,7 @@ http://yuilibrary.com/license/
         and `notify()` are disabled.
 
         @method reject
-        @param {Any} value Value to pass along to the "reject" subscribers
+        @param {Any} reason Value to pass along to the "reject" subscribers
         **/
         reject: function (reason) {
             var status = this._status;
