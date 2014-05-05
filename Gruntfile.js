@@ -26,10 +26,12 @@ module.exports = function (grunt) {
                 ],
                 dest: 'promise.js'
             }
-        }
+        },
+        clean: ['tmp/']
     });
 
     grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-contrib-clean');
 
     grunt.registerMultiTask('toAMD', 'Wrap a Node module in AMD format', function () {
         var name = this.target;
@@ -54,6 +56,6 @@ module.exports = function (grunt) {
         });
     });
 
-    grunt.registerTask('build', ['toAMD', 'concat']);
+    grunt.registerTask('build', ['toAMD', 'concat', 'clean']);
     grunt.registerTask('default', ['build']);
 };
