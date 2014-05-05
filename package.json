@@ -48,7 +48,7 @@
         "lib": "./lib"
     },
     "scripts": {
-        "pretest": "jshint --config node_modules/yui-lint/jshint.json ./promise.js",
+        "pretest": "jshint --config node_modules/yui-lint/jshint.json ./src/promise.js",
         "test": "mocha tests/cli/amd-runner.js --globals Promise,PromisePolyfill -R dot && istanbul cover node_modules/mocha/bin/_mocha -- tests/cli/promise-tests.js -R dot",
         "lint": "jshint --config node_modules/yui-lint/jshint.json ./promise.js"
     }
