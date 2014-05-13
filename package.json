@@ -30,6 +30,7 @@
     },
     "devDependencies": {
         "grunt": "^0.4.4",
+        "grunt-cli": "^0.1.13",
         "grunt-es6-module-transpiler": "^0.6.0",
         "grunt-es6-module-wrap-default": "^0.2.0",
         "grunt-amd-wrap": "^1.0.1",
