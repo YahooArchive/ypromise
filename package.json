@@ -24,14 +24,20 @@
         "A+",
         "yahoo"
     ],
-    "main": "promise.js",
+    "main": "dist/promise.js",
     "dependencies": {
         "asap": "^1.0.0"
     },
     "devDependencies": {
         "grunt": "^0.4.4",
+        "grunt-es6-module-transpiler": "^0.6.0",
+        "grunt-es6-module-wrap-default": "^0.2.0",
+        "grunt-amd-wrap": "^1.0.1",
         "grunt-contrib-concat": "^0.4.0",
         "grunt-contrib-clean": "^0.5.0",
+        "grunt-contrib-jshint": "^0.10.0",
+        "grunt-mocha-test": "^0.10.2",
+        "mustache": "^0.8.1",
         "promises-aplus-tests": "2.0.3",
         "requirejs": "~2.1.9",
         "mocha": "~1.7.1",
@@ -39,8 +45,7 @@
         "sinon": "~1.8.2",
         "istanbul": "~0.2.4",
         "xunit-file": "*",
-        "yui-lint": "^0.1.4",
-        "jshint": "^2.4.4"
+        "yui-lint": "^0.1.4"
     },
     "engines": {
         "node": "*"
@@ -49,8 +54,8 @@
         "lib": "./lib"
     },
     "scripts": {
-        "pretest": "jshint --config node_modules/yui-lint/jshint.json ./src/promise.js",
-        "test": "mocha tests/cli/amd-runner.js --globals Promise,PromisePolyfill -R dot && istanbul cover node_modules/mocha/bin/_mocha -- tests/cli/promise-tests.js -R dot",
-        "lint": "jshint --config node_modules/yui-lint/jshint.json ./promise.js"
+        "prepublish": "grunt cjs",
+        "pretest": "grunt lint",
+        "test": "grunt test"
     }
 }
