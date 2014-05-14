@@ -37,14 +37,13 @@
         "grunt-contrib-concat": "^0.4.0",
         "grunt-contrib-clean": "^0.5.0",
         "grunt-contrib-jshint": "^0.10.0",
-        "grunt-mocha-test": "^0.10.2",
+        "grunt-contrib-uglify": "^0.4.0",
         "mustache": "^0.8.1",
         "promises-aplus-tests": "2.0.3",
         "requirejs": "~2.1.9",
-        "mocha": "~1.7.1",
+        "mocha": "^1.18.2",
         "expect.js": "~0.2.0",
         "sinon": "~1.8.2",
-        "istanbul": "~0.2.4",
         "xunit-file": "*",
         "yui-lint": "^0.1.4"
     },
@@ -57,6 +56,6 @@
     "scripts": {
         "prepublish": "grunt cjs",
         "pretest": "grunt lint",
-        "test": "grunt test"
+        "test": "grunt cjs && istanbul cover node_modules/mocha/bin/_mocha -- tests/cli/promise-tests.js -R dot"
     }
 }

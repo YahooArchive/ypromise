@@ -46,25 +46,33 @@ module.exports = function (grunt) {
                 dest: 'tmp/'
             }
         },
-        mochaTest: {
-            cjs: {
-                options: {
-                    reporter: 'dot'
-                },
-                src: ['tests/cli/promise-tests.js']
-            }
-        },
         concat: {
             options: {
                 separator: EOL
             },
             amd: {
                 src: [
+                    'assets/license.js',
                     'tmp/queue.js',
                     'tmp/asap.js',
                     'tmp/promise.js'
                 ],
                 dest: 'tmp/bundle.js'
+            },
+            release: {
+                files: [{
+                    src: [
+                        'assets/license.js',
+                        'tmp/promise.amd-min.js'
+                    ],
+                    dest: 'promise.amd-min.js'
+                }, {
+                    src: [
+                        'assets/license.js',
+                        'tmp/promise-min.js'
+                    ],
+                    dest: 'promise-min.js'
+                }]
             }
         },
         template: {
@@ -79,7 +87,24 @@ module.exports = function (grunt) {
                 options: {
                     template: 'assets/polyfill.mustache',
                     definition: 'tmp/bundle.js',
-                    dest: 'promise.polyfill.js'
+                    dest: 'promise.js'
+                }
+            }
+        },
+        uglify: {
+            options: {
+                mangle: true,
+                squeeze: true,
+                semicolon: false,
+                lift_vars: false,
+                mangle_toplevel: true,
+                no_mangle_functions: true,
+                max_line_length: 6000
+            },
+            all: {
+                files: {
+                    'tmp/promise.amd-min.js': ['promise.amd.js'],
+                    'tmp/promise-min.js': ['promise.js']
                 }
             }
         },
@@ -93,18 +118,17 @@ module.exports = function (grunt) {
             'build/',
             'dist/',
             'tmp/',
-            'promise.amd.js',
-            'promise.polyfill.js'
+            'promise*'
         ]
     });
 
     grunt.loadNpmTasks('grunt-es6-module-transpiler');
     grunt.loadNpmTasks('grunt-es6-module-wrap-default');
+    grunt.loadNpmTasks("grunt-amd-wrap");
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-mocha-test');
-    grunt.loadNpmTasks("grunt-amd-wrap");
+    grunt.loadNpmTasks('grunt-contrib-uglify');
 
     grunt.registerMultiTask('template', 'Render a custom template', function () {
         var options = this.options(),
@@ -133,7 +157,13 @@ module.exports = function (grunt) {
         'template:polyfill'
     ]);
     grunt.registerTask('build', ['clean', 'cjs', 'amd', 'polyfill']);
-    grunt.registerTask('test', ['mochaTest']);
     grunt.registerTask('lint', ['jshint']);
+    grunt.registerTask('release', [
+        'clean',
+        'amd',
+        'polyfill',
+        'uglify',
+        'concat:release'
+    ]);
     grunt.registerTask('default', ['build']);
 };
