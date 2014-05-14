@@ -1,5 +1,4 @@
-var EOL = require('os').EOL,
-    Mustache = require('mustache');
+var EOL = require('os').EOL;
 
 module.exports = function (grunt) {
     grunt.initConfig({
@@ -46,49 +45,32 @@ module.exports = function (grunt) {
                 dest: 'tmp/'
             }
         },
-        concat: {
-            options: {
-                separator: EOL
-            },
-            amd: {
-                src: [
-                    'assets/license.js',
-                    'tmp/queue.js',
-                    'tmp/asap.js',
-                    'tmp/promise.js'
-                ],
-                dest: 'tmp/bundle.js'
-            },
-            release: {
-                files: [{
-                    src: [
-                        'assets/license.js',
-                        'tmp/promise.amd-min.js'
-                    ],
-                    dest: 'promise.amd-min.js'
-                }, {
-                    src: [
-                        'assets/license.js',
-                        'tmp/promise-min.js'
-                    ],
-                    dest: 'promise-min.js'
-                }]
-            }
-        },
-        template: {
+        bundle: {
             amd: {
                 options: {
-                    template: 'assets/amd.mustache',
-                    definition: 'tmp/bundle.js',
+                    template: 'tasks/assets/amd.mustache'
+                },
+                files: [{
+                    src: [
+                        'tmp/queue.js',
+                        'tmp/asap.js',
+                        'tmp/promise.js'
+                    ],
                     dest: 'promise.amd.js'
-                }
+                }]
             },
             polyfill: {
                 options: {
-                    template: 'assets/polyfill.mustache',
-                    definition: 'tmp/bundle.js',
+                    template: 'tasks/assets/polyfill.mustache'
+                },
+                files: [{
+                    src: [
+                        'tmp/queue.js',
+                        'tmp/asap.js',
+                        'tmp/promise.js'
+                    ],
                     dest: 'promise.js'
-                }
+                }]
             }
         },
         uglify: {
@@ -103,9 +85,26 @@ module.exports = function (grunt) {
             },
             all: {
                 files: {
-                    'tmp/promise.amd-min.js': ['promise.amd.js'],
-                    'tmp/promise-min.js': ['promise.js']
+                    'promise.amd-min.js': ['promise.amd.js'],
+                    'promise-min.js': ['promise.js']
                 }
+            }
+        },
+        license: {
+            options: {
+                banner: [
+                    '/*',
+                    'Copyright 2013 Yahoo! Inc. All rights reserved.',
+                    'Licensed under the BSD License.',
+                    'http://yuilibrary.com/license/',
+                    '*/'
+                ].join(EOL)
+            },
+            amd: {
+                src: ['promise.amd.js', 'promise.amd-min.js']
+            },
+            polyfill: {
+                src: ['promise.js', 'promise-min.js']
             }
         },
         jshint: {
@@ -125,36 +124,27 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-es6-module-transpiler');
     grunt.loadNpmTasks('grunt-es6-module-wrap-default');
     grunt.loadNpmTasks("grunt-amd-wrap");
-    grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
 
-    grunt.registerMultiTask('template', 'Render a custom template', function () {
-        var options = this.options(),
-            template = grunt.file.read(options.template),
-            output = Mustache.render(template, {
-                definition: grunt.file.read(options.definition)
-            });
-
-        grunt.file.write(options.dest, output);
-    });
+    grunt.loadTasks('tasks/');
 
     grunt.registerTask('cjs', [
         'transpile:cjs',
-        'es6_module_wrap_default:cjs'
+        'es6_module_wrap_default'
     ]);
     grunt.registerTask('amd', [
         'transpile:amd',
-        'amdwrap:amd',
-        'concat:amd',
-        'template:amd'
+        'amdwrap',
+        'bundle:amd',
+        'license:amd'
     ]);
     grunt.registerTask('polyfill', [
         'transpile:amd',
-        'amdwrap:amd',
-        'concat:amd',
-        'template:polyfill'
+        'amdwrap',
+        'bundle:polyfill',
+        'license:polyfill'
     ]);
     grunt.registerTask('build', ['clean', 'cjs', 'amd', 'polyfill']);
     grunt.registerTask('lint', ['jshint']);
@@ -163,7 +153,7 @@ module.exports = function (grunt) {
         'amd',
         'polyfill',
         'uglify',
-        'concat:release'
+        'license'
     ]);
     grunt.registerTask('default', ['build']);
 };
