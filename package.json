@@ -41,6 +41,7 @@
         "mustache": "^0.8.1",
         "promises-aplus-tests": "2.0.3",
         "requirejs": "~2.1.9",
+        "istanbul": "^0.2.9",
         "mocha": "^1.18.2",
         "expect.js": "~0.2.0",
         "sinon": "~1.8.2",
