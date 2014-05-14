@@ -97,14 +97,18 @@ module.exports = function (grunt) {
                     'Copyright 2013 Yahoo! Inc. All rights reserved.',
                     'Licensed under the BSD License.',
                     'http://yuilibrary.com/license/',
-                    '*/'
+                    '*/',
+                    ''
                 ].join(EOL)
             },
             amd: {
-                src: ['promise.amd.js', 'promise.amd-min.js']
+                src: ['promise.amd.js']
             },
             polyfill: {
-                src: ['promise.js', 'promise-min.js']
+                src: ['promise.js']
+            },
+            release: {
+                src: ['*-min.js']
             }
         },
         jshint: {
@@ -153,7 +157,7 @@ module.exports = function (grunt) {
         'amd',
         'polyfill',
         'uglify',
-        'license'
+        'license:release'
     ]);
     grunt.registerTask('default', ['build']);
 };
