@@ -24,8 +24,23 @@
         "A+",
         "yahoo"
     ],
-    "main": "promise.js",
+    "main": "build/dist/promise.js",
+    "dependencies": {
+        "asap": "^1.0.0"
+    },
     "devDependencies": {
+        "broccoli": "^0.12.0",
+        "broccoli-kitchen-sink-helpers": "^0.2.2",
+        "broccoli-filter": "^0.1.6",
+        "broccoli-merge-trees": "^0.1.3",
+        "broccoli-writer": "^0.1.1",
+        "broccoli-unwatched-tree": "^0.1.1",
+        "broccoli-static-compiler": "^0.1.4",
+        "broccoli-es6-module-filter": "^0.1.9",
+        "broccoli-uglify-js": "^0.1.3",
+        "walk-sync": "^0.1.0",
+        "mkdirp": "^0.5.0",
+        "handlebars": "^1.3.0",
         "promises-aplus-tests": "2.0.3",
         "requirejs": "~2.1.9",
         "mocha": "~1.7.1",
@@ -43,8 +58,9 @@
         "lib": "./lib"
     },
     "scripts": {
-        "pretest": "jshint --config node_modules/yui-lint/jshint.json ./promise.js",
-        "test": "mocha tests/cli/amd-runner.js --globals Promise,PromisePolyfill -R dot && istanbul cover node_modules/mocha/bin/_mocha -- tests/cli/promise-tests.js -R dot",
-        "lint": "jshint --config node_modules/yui-lint/jshint.json ./promise.js"
+        "prepublish": "broccoli build build",
+        "pretest": "jshint --config node_modules/yui-lint/jshint.json ./lib/promise.js",
+        "test": "_mocha tests/cli/amd-runner.js --globals Promise,PromisePolyfill -R dot && istanbul cover node_modules/mocha/bin/_mocha -- tests/cli/promise-tests.js -R dot",
+        "lint": "jshint --config node_modules/yui-lint/jshint.json ./lib/promise.js"
     }
 }

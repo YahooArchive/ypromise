@@ -1,9 +1,11 @@
+var path = require('path');
 global.requirejs = require('requirejs');
 global.expect = require('expect.js');
 
+console.log(path.join(__dirname, '../../build/promise.amd'));
 requirejs.config({
     paths: {
-        'ypromise': '../../../promise'
+        'ypromise': path.join(__dirname, '../../build/promise.amd')
     }
 });
 
