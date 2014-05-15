@@ -30,6 +30,7 @@
     },
     "devDependencies": {
         "broccoli": "^0.12.0",
+        "broccoli-cli": "^0.0.1",
         "broccoli-kitchen-sink-helpers": "^0.2.2",
         "broccoli-filter": "^0.1.6",
         "broccoli-merge-trees": "^0.1.3",
