@@ -36,7 +36,7 @@ var bundleSrc = mergeTrees([asap, compileModules('lib/', {
 var browserFiles = mergeTrees([makeBundle(bundleSrc, {
     template: './plugins/assets/amd.handlebars',
     files: [
-        'queue.js',
+//        'queue.js',
         'asap.js',
         'promise.js'
     ],
@@ -44,7 +44,7 @@ var browserFiles = mergeTrees([makeBundle(bundleSrc, {
 }), makeBundle(bundleSrc, {
     template: './plugins/assets/polyfill.handlebars',
     files: [
-        'queue.js',
+//        'queue.js',
         'asap.js',
         'promise.js'
     ],
