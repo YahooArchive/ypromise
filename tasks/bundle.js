@@ -19,7 +19,7 @@ module.exports = function (grunt) {
 
             // Write joined contents to destination filepath.
             grunt.file.write(file.dest, Mustache.render(template, {
-                definition: contents
+                contents: contents
             }));
             // Print a success message.
             grunt.log.writeln('File "' + file.dest + '" created.');

@@ -1,6 +1,6 @@
 ;(function (global) {
 
-var __p, modules = {};
+var __p, __modules = {};
 
 function define(name, deps, factory) {
     if (typeof deps === 'function') {
@@ -8,7 +8,7 @@ function define(name, deps, factory) {
         deps = ['require', 'exports', 'module'];
     }
     function require(name) {
-        return modules[name];
+        return __modules[name];
     }
     var module = {
             exports: {}
@@ -28,14 +28,15 @@ function define(name, deps, factory) {
                 instances[i] = module;
                 break;
             default:
-                instances[i] = modules[deps[i]];
+                instances[i] = require(deps[i]);
                 break;
         }
     }
-    modules[name] = factory.apply(null, instances);
+    factory.apply(null, instances);
+    __modules[name] = module.exports['default'] || module.exports;
 }
 
-{{{definition}}}
+{{{contents}}}
 
 if (!global.Promise ||
     !global.Promise.resolve ||
@@ -43,8 +44,8 @@ if (!global.Promise ||
     !global.Promise.all ||
     !global.Promise.race ||
     (__p = global.Promise.resolve()) !== global.Promise.resolve(__p)) {
-    global.Promise = modules.promise['default'];
+    global.Promise = __modules.promise;
 }
-global.PromisePolyfill = modules.promise['default'];
+global.PromisePolyfill = __modules.promise;
 
 }(this));

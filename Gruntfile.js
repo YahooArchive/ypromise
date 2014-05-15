@@ -127,7 +127,6 @@ module.exports = function (grunt) {
 
     grunt.loadNpmTasks('grunt-es6-module-transpiler');
     grunt.loadNpmTasks('grunt-es6-module-wrap-default');
-    grunt.loadNpmTasks("grunt-amd-wrap");
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
