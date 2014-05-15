@@ -1,0 +1,43 @@
+define(['require', 'module'], function (require, module) {
+
+var __p, __modules = {};
+
+function define(name, deps, factory) {
+    if (typeof deps === 'function') {
+        factory = deps;
+        deps = ['require', 'exports', 'module'];
+    }
+    function require(name) {
+        return __modules[name];
+    }
+    var module = {
+            exports: {}
+        },
+        instances = [],
+        i;
+
+    for (i = 0; i < deps.length; i++) {
+        switch (deps[i]) {
+            case 'require':
+                instances[i] = require;
+                break;
+            case 'exports':
+                instances[i] = module.exports;
+                break;
+            case 'module':
+                instances[i] = module;
+                break;
+            default:
+                instances[i] = require(deps[i]);
+                break;
+        }
+    }
+    factory.apply(null, instances);
+    __modules[name] = module.exports['default'] || module.exports;
+}
+
+{{{contents}}}
+
+module.exports = __modules.promise;
+
+});

@@ -15,14 +15,13 @@
     window.requirejs = require;
     requirejs.config({
       paths: {
-        ypromise: '../../promise'
+        ypromise: '../../build/promise.amd'
       }
     });
   </script>
   <script src="assets/amd-tests.js"></script>
   <script>
     mocha.checkLeaks();
-    mocha.globals(['Promise']);
     mocha.run();
   </script>
 </body>

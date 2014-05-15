@@ -1,1 +1,3 @@
-tests
+tests/
+tmp/
+plugins/
