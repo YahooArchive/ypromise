@@ -24,6 +24,7 @@
         "A+",
         "yahoo"
     ],
+    "files": ["build", "dist", "LICENSE.md"],
     "main": "dist/promise.js",
     "dependencies": {
         "asap": "^1.0.0"
@@ -49,9 +50,6 @@
     },
     "engines": {
         "node": "*"
-    },
-    "directories": {
-        "lib": "./lib"
     },
     "scripts": {
         "prepublish": "grunt build",
