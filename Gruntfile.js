@@ -1,4 +1,10 @@
-var EOL = require('os').EOL;
+/*
+Copyright 2013 Yahoo! Inc. All rights reserved.
+Licensed under the BSD License.
+http://yuilibrary.com/license/
+*/
+var path = require('path'),
+    EOL  = require('os').EOL;
 
 module.exports = function (grunt) {
     grunt.initConfig({
@@ -20,7 +26,7 @@ module.exports = function (grunt) {
                     expand: true,
                     cwd: 'lib/',
                     src: ['*.js'],
-                    dest: 'tmp/'
+                    dest: 'tmp/parts/'
                 }]
             }
         },
@@ -41,35 +47,72 @@ module.exports = function (grunt) {
             amd: {
                 expand: true,
                 cwd: 'node_modules/asap/',
-                src: ['queue.js', 'asap.js'],
-                dest: 'tmp/'
+                src: ['*.js'],
+                dest: 'tmp/parts/'
             }
         },
-        bundle: {
+        wrap: {
+            bundle: {
+                options: {
+                    separator: EOL,
+                    wrapper: function (filepath, options) {
+                        filepath = path.basename(filepath, '.js');
+                        if (filepath === 'queue') {
+                            filepath = './queue';
+                        }
+                        return ['define("' + filepath +
+                            '", function (require, exports, module) {', '});'];
+                    }
+                },
+                expand: true,
+                cwd: 'node_modules/asap/',
+                src: ['*.js'],
+                dest: 'tmp/parts/'
+            },
             amd: {
                 options: {
-                    template: 'tasks/assets/amd.mustache'
+                    separator: EOL,
+                    wrapper: [
+                        'define(function () {',
+                        'return require("promise");' + EOL + '});' + EOL
+                    ]
                 },
-                files: [{
-                    src: [
-                        'tmp/queue.js',
-                        'tmp/asap.js',
-                        'tmp/promise.js'
-                    ],
-                    dest: 'promise.amd.js'
-                }]
+                src: ['tmp/bundle.js'],
+                dest: 'promise.amd.js'
             },
             polyfill: {
                 options: {
-                    template: 'tasks/assets/polyfill.mustache'
+                    separator: EOL,
+                    wrapper: [
+                        ';(function (global) {',
+                        [
+                            'var PromisePolyfill = require("promise"), __p;',
+                            'if (!global.Promise ||',
+                            '!global.Promise.resolve ||',
+                            '!global.Promise.reject ||',
+                            '!global.Promise.all ||',
+                            '!global.Promise.race ||',
+                            '(__p = global.Promise.resolve()) ' +
+                                '!== global.Promise.resolve(__p)) {',
+                            'global.Promise = PromisePolyfill;',
+                            '}',
+                            'global.PromisePolyfill = PromisePolyfill;',
+                            '}(this));'
+                        ].join(EOL)
+                    ]
+                },
+                src: ['tmp/bundle.js'],
+                dest: 'promise.js'
+            }
+        },
+        concat: {
+            bundle: {
+                options: {
+                    separator: EOL,
                 },
                 files: [{
-                    src: [
-                        'tmp/queue.js',
-                        'tmp/asap.js',
-                        'tmp/promise.js'
-                    ],
-                    dest: 'promise.js'
+                    src: ['tasks/assets/fake-amd.js', 'tmp/parts/*.js'],
+                    dest: 'tmp/bundle.js'
                 }]
             }
         },
@@ -130,6 +173,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-wrap');
 
     grunt.loadTasks('tasks/');
 
@@ -139,14 +184,17 @@ module.exports = function (grunt) {
     ]);
     grunt.registerTask('amd', [
         'transpile:amd',
-        'amdwrap',
-        'bundle:amd',
+        'wrap:bundle',
+        'concat:bundle',
+        'wrap:amd',
         'license:amd'
     ]);
     grunt.registerTask('polyfill', [
         'transpile:amd',
-        'amdwrap',
-        'bundle:polyfill',
+        'wrap:bundle',
+        'wrap:bundle',
+        'concat:bundle',
+        'wrap:polyfill',
         'license:polyfill'
     ]);
     grunt.registerTask('build', ['clean', 'cjs', 'amd', 'polyfill']);
