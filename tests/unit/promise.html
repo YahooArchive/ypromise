@@ -9,12 +9,15 @@
   <div id="mocha"></div>
   <script src="../../node_modules/expect.js/expect.js"></script>
   <script src="../../node_modules/mocha/mocha.js"></script>
-  <script>mocha.setup('bdd')</script>
+  <script>mocha.setup('bdd');</script>
   <script src="../../promise.js"></script>
+  <script>
+  window.Promise = window.PromisePolyfill;
+  </script>
   <script src="assets/promise-tests.js"></script>
   <script>
     mocha.checkLeaks();
-    mocha.globals(['Promise']);
+    mocha.globals(['Promise', 'PromisePolyfill']);
     mocha.run();
   </script>
 </body>

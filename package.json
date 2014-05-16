@@ -24,27 +24,36 @@
         "A+",
         "yahoo"
     ],
-    "main": "promise.js",
+    "files": ["build", "dist", "LICENSE.md"],
+    "main": "dist/promise.js",
+    "dependencies": {
+        "asap": "^1.0.0"
+    },
     "devDependencies": {
+        "grunt": "^0.4.4",
+        "grunt-cli": "^0.1.13",
+        "grunt-es6-module-transpiler": "^0.6.0",
+        "grunt-es6-module-wrap-default": "^0.2.0",
+        "grunt-contrib-concat": "^0.4.0",
+        "grunt-contrib-clean": "^0.5.0",
+        "grunt-contrib-jshint": "^0.10.0",
+        "grunt-contrib-uglify": "^0.4.0",
+        "grunt-wrap": "^0.3.0",
         "promises-aplus-tests": "2.0.3",
         "requirejs": "~2.1.9",
-        "mocha": "~1.7.1",
+        "istanbul": "^0.2.9",
+        "mocha": "^1.18.2",
         "expect.js": "~0.2.0",
         "sinon": "~1.8.2",
-        "istanbul": "~0.2.4",
         "xunit-file": "*",
-        "yui-lint": "^0.1.4",
-        "jshint": "^2.4.4"
+        "yui-lint": "^0.1.4"
     },
     "engines": {
         "node": "*"
     },
-    "directories": {
-        "lib": "./lib"
-    },
     "scripts": {
-        "pretest": "jshint --config node_modules/yui-lint/jshint.json ./promise.js",
-        "test": "mocha tests/cli/amd-runner.js --globals Promise,PromisePolyfill -R dot && istanbul cover node_modules/mocha/bin/_mocha -- tests/cli/promise-tests.js -R dot",
-        "lint": "jshint --config node_modules/yui-lint/jshint.json ./promise.js"
+        "prepublish": "grunt build",
+        "pretest": "grunt lint",
+        "test": "_mocha tests/cli/amd-runner.js --globals Promise,PromisePolyfill -R spec && istanbul cover node_modules/mocha/bin/_mocha -- tests/cli/promise-tests.js -R dot"
     }
 }
