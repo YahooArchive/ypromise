@@ -439,7 +439,7 @@ http://yuilibrary.com/license/
             if (status === 'pending' || status === 'accepted') {
                 this._result = reason;
                 this._status = 'rejected';
-                if (!this._errbacks.length) {Promise._log('Promise rejected but no error handlers were registered to it', 'info');}
+                if (!this._errbacks.length) {Promise._log(reason, 'error');}
             }
 
             if (this._status === 'rejected') {
