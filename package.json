@@ -1,6 +1,6 @@
 {
     "name": "ypromise",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "description": "ES6 Promise polyfill",
     "author": "Juan Dopazo <dopazo.juan@gmail.com>",
     "licenses": [
