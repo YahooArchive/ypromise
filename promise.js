@@ -66,7 +66,7 @@ http://yuilibrary.com/license/
             return new Promise(fn);
         }
 
-        var resolver = new Promise.Resolver(this);
+        var resolver = new Resolver();
 
         /**
         A reference to the resolver object that handles this promise
@@ -338,9 +338,8 @@ http://yuilibrary.com/license/
 
     @class Promise.Resolver
     @constructor
-    @param {Promise} promise The promise instance this resolver will be handling
     **/
-    function Resolver(promise) {
+    function Resolver() {
         /**
         List of success callbacks
 
@@ -358,15 +357,6 @@ http://yuilibrary.com/license/
         @private
         **/
         this._errbacks = [];
-
-        /**
-        The promise for this Resolver.
-
-        @property promise
-        @type Promise
-        @deprecated
-        **/
-        this.promise = promise;
 
         /**
         The status of the operation. This property may take only one of the following
