@@ -26,12 +26,12 @@
     ],
     "main": "promise.js",
     "devDependencies": {
-        "promises-aplus-tests": "2.0.3",
+        "promises-aplus-tests": "2.1.0",
         "requirejs": "~2.1.9",
-        "mocha": "~1.7.1",
-        "expect.js": "~0.2.0",
-        "sinon": "~1.8.2",
-        "istanbul": "~0.2.4",
+        "mocha": "~2.0.1",
+        "expect.js": "~0.3.1",
+        "sinon": "~1.11.1",
+        "istanbul": "~0.3.2",
         "xunit-file": "*",
         "yui-lint": "^0.1.4",
         "jshint": "^2.4.4"
