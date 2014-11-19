@@ -1,6 +1,6 @@
 {
     "name": "ypromise",
-    "version": "0.2.4",
+    "version": "0.3.0",
     "description": "ES6 Promise polyfill",
     "author": "Juan Dopazo <dopazo.juan@gmail.com>",
     "licenses": [
@@ -32,7 +32,6 @@
         "expect.js": "~0.3.1",
         "sinon": "~1.11.1",
         "istanbul": "~0.3.2",
-        "xunit-file": "*",
         "yui-lint": "^0.1.4",
         "jshint": "^2.4.4"
     },
