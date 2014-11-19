@@ -76,10 +76,25 @@ extend.f = function () {};
 
 describe('Basic promise behavior', function () {
     describe('Promise constructor', function () {
-        it('should return a promise when used as a function', function () {
-            /*jshint newcap: false*/
-            expect(Promise(function () {})).to.be.a(Promise);
-            /*jshint newcap: true*/
+        it('throws when used as a function', function () {
+            function testFn() {
+                /*jshint newcap: false*/
+                return Promise(function () {});
+                /*jshint newcap: true*/
+            }
+            expect(testFn).to.throwException(function (err) {
+                expect(err).to.be.a(TypeError);
+            });
+        });
+
+        it('throws when not passed a function', function () {
+            function testFn() {
+                return new Promise(5);
+            }
+
+            expect(testFn).to.throwException(function (err) {
+                expect(err).to.be.a(TypeError);
+            });
         });
 
         specify('fulfilling more than once should not change the promise value', function (done) {

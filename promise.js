@@ -62,8 +62,10 @@ http://yuilibrary.com/license/
     **/
     function Promise(fn) {
         if (!(this instanceof Promise)) {
-            Promise._log('Promises should always be created with new Promise(). This will throw an error in the future', 'error');
-            return new Promise(fn);
+            throw new TypeError(this + 'is not a promise');
+        }
+        if (typeof fn !== 'function') {
+            throw new TypeError('Promise resolver ' + fn + ' is not a function');
         }
 
         var resolver = new Resolver();
