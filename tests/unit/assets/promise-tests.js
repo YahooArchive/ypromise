@@ -3,13 +3,14 @@ Copyright 2013 Yahoo! Inc. All rights reserved.
 Licensed under the BSD License.
 http://yuilibrary.com/license/
 */
+/*global describe, specify, it, expect, Promise*/
 var dummy = {dummy: 'dummy'};
 
 function isFulfilled(promise, done, callback) {
     promise.then(function (value) {
         setTimeout(function () {
             callback(value);
-        }, 0)
+        }, 0);
     }, function () {
         setTimeout(function () {
             done(new Error('Promise rejected instead of fulfilled'));
@@ -46,13 +47,15 @@ function rejectedAfter(ms) {
 }
 
 function extend(subclass, superclass, proto, attrs) {
+    var prop;
+
     extend.f.prototype = superclass.prototype;
     subclass.prototype = new extend.f();
     subclass.prototype.constructor = subclass;
     subclass.superclass = superclass.prototype;
 
     if (proto) {
-        for (var prop in proto) {
+        for (prop in proto) {
             if (proto.hasOwnProperty(prop)) {
                 subclass.prototype[prop] = proto[prop];
             }
@@ -60,7 +63,7 @@ function extend(subclass, superclass, proto, attrs) {
     }
 
     if (attrs) {
-        for (var prop in attrs) {
+        for (prop in attrs) {
             if (attrs.hasOwnProperty(prop)) {
                 subclass[prop] = attrs[prop];
             }
@@ -73,8 +76,25 @@ extend.f = function () {};
 
 describe('Basic promise behavior', function () {
     describe('Promise constructor', function () {
-        it('should return a promise when used as a function', function () {
-            expect(Promise(function () {})).to.be.a(Promise);
+        it('throws when used as a function', function () {
+            function testFn() {
+                /*jshint newcap: false*/
+                return Promise(function () {});
+                /*jshint newcap: true*/
+            }
+            expect(testFn).to.throwException(function (err) {
+                expect(err).to.be.a(TypeError);
+            });
+        });
+
+        it('throws when not passed a function', function () {
+            function testFn() {
+                return new Promise(5);
+            }
+
+            expect(testFn).to.throwException(function (err) {
+                expect(err).to.be.a(TypeError);
+            });
         });
 
         specify('fulfilling more than once should not change the promise value', function (done) {
@@ -111,7 +131,7 @@ describe('Basic promise behavior', function () {
     describe('promise.then()', function () {
         it('returns a promise', function () {
             var promise = new Promise(function (resolve) {
-                resolve(5)
+                resolve(5);
             });
             expect(promise).to.be.a(Promise);
         });
@@ -141,7 +161,9 @@ describe('Basic promise behavior', function () {
     });
 
     describe('Behavior of the then() callbacks', function () {
+        /*jshint newcap: false, evil: true*/
         var global = Function('return this')();
+        /*jshint newcap: true, evil: false*/
 
         specify('throwing inside a callback should turn into a rejection', function (done) {
             var error = new Error('Arbitrary error');
